@@ -51,7 +51,7 @@ HTMLParserTokenizer class >> generateHTMLEntityPage [
 	json := 'http://www.w3.org/TR/html5/entities.json' asXMLURI get.
 	[json atEnd]
 		whileFalse: [
-			fields := $: split: (json upToAny: String crlf).
+			fields := $: xmlSplit: (json upToAny: String crlf).
 			fields size > 1
 				ifTrue: [
 					entityName := fields first copyWithoutAll: '&;"{', Character separators.
@@ -2454,7 +2454,13 @@ HTMLParserTokenizer >> nextDecodedCharReference [
 
 	codePoint := self nextName.
 	codePointStream := codePoint readStream.
-	character := self characterFromCodePoint: (XMLIntegerReader readFrom: codePointStream).
+	character :=
+		self characterFromCodePoint:
+			(XMLIntegerReader
+				readFrom: codePointStream
+				withBase: 16
+				startingWith: $x
+				orBase: 10).
 	(character notNil and: [codePointStream atEnd])
 		ifTrue: [
 			streamReader peek == $; "; is optional"
