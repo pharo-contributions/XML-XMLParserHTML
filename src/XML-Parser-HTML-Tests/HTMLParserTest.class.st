@@ -25,8 +25,8 @@ HTMLParserTest >> benchmark2 [
 { #category : #tests }
 HTMLParserTest >> testDecodingCharacters [
 	self assert:
-		(HTMLParser parse: '&#60; &#x3C &#0; &#-1 &#invalid; &#invalid &#')
-			contentString = '< < &#0; &#-1 &#invalid; &#invalid &#'.
+		(HTMLParser parse: '&#60; &#x3C &#X3E &#62; &#0; &#-1 &#invalid; &#invalid &#')
+			contentString = '< < > > &#0; &#-1 &#invalid; &#invalid &#'.
 ]
 
 { #category : #tests }
