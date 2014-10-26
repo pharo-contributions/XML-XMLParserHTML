@@ -2459,7 +2459,7 @@ HTMLParserTokenizer >> nextDecodedCharReference [
 			(XMLIntegerReader
 				readFrom: codePointStream
 				withBase: 16
-				startingWith: $x
+				startingWithAny: 'Xx'
 				orBase: 10).
 	(character notNil and: [codePointStream atEnd])
 		ifTrue: [
