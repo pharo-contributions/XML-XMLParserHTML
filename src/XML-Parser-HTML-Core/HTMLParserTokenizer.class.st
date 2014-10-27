@@ -2393,7 +2393,7 @@ HTMLParserTokenizer >> expectUpToAll: aString [
 
 { #category : #tokenizing }
 HTMLParserTokenizer >> nextAttributeValue [
-	| quote value |
+	| quote nextChar |
 
 	streamReader atQuote
 		ifFalse: [^ self nextName].
@@ -2402,20 +2402,8 @@ HTMLParserTokenizer >> nextAttributeValue [
 	context
 		saveCurrent;
 		enterLiteralValue.
-	value := self nextAttributeValueDelimitedBy: quote.
-	context resetPrevious.
-
-	self expectNext: quote.
-
-	^ value.
-]
-
-{ #category : #tokenizing }
-HTMLParserTokenizer >> nextAttributeValueDelimitedBy: aQuote [
-	| nextChar |
-
 	writeStream reset.
-	[(nextChar := streamReader peek) == aQuote
+	[(nextChar := streamReader peek) == quote
 		or: [nextChar == nil]]
 		whileFalse: [
 			(streamReader next) == $&
@@ -2426,6 +2414,10 @@ HTMLParserTokenizer >> nextAttributeValueDelimitedBy: aQuote [
 							(nextChar := self nextGeneralEntityReference)
 								ifNotNil: [writeStream nextPut: nextChar]]]
 				ifFalse: [writeStream nextPut: nextChar]].
+	context resetPrevious.
+
+	self expectNext: quote.
+
 	^ writeStream contents.
 ]
 
@@ -2447,21 +2439,20 @@ HTMLParserTokenizer >> nextContentToken [
 
 { #category : #tokenizing }
 HTMLParserTokenizer >> nextDecodedCharReference [
-	| codePoint codePointStream character |
+	| codePoint reader character |
 
 	"skip $#"
 	streamReader next.
 
 	codePoint := self nextName.
-	codePointStream := codePoint readStream.
+	reader := XMLIntegerReader on: codePoint readStream.
 	character :=
 		self characterFromCodePoint:
-			(XMLIntegerReader
-				readFrom: codePointStream
-				withBase: 16
+			(reader 
+				nextIntegerWithBase: 16
 				startingWithAny: 'Xx'
 				orBase: 10).
-	(character notNil and: [codePointStream atEnd])
+	(character notNil and: [reader atEnd])
 		ifTrue: [
 			streamReader peek == $; "; is optional"
 				ifTrue: [streamReader next].

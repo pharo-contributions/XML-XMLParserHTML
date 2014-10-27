@@ -256,6 +256,13 @@ HTMLElementNester >> hasOpenElement: anElementName [
 	^ (self openElementsByName at: anElementName ifAbsent: [0]) > 0
 ]
 
+{ #category : #initialization }
+HTMLElementNester >> initialize [
+	super initialize.
+
+	openElementsByName := Dictionary new.
+]
+
 { #category : #testing }
 HTMLElementNester >> isOpenUniqueElement: anElementName [
 	^ (UniqueElements includes: anElementName)
@@ -282,7 +289,7 @@ HTMLElementNester >> mustStartHeadSectionForTag: anHtmlTagInfo [
 
 { #category : #private }
 HTMLElementNester >> openElementsByName [
-	^ openElementsByName ifNil: [openElementsByName := Dictionary new].
+	^ openElementsByName
 ]
 
 { #category : #checking }
