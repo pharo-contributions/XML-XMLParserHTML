@@ -2424,17 +2424,17 @@ HTMLParserTokenizer >> nextAttributeValue [
 { #category : #tokenizing }
 HTMLParserTokenizer >> nextContentToken [
 	context isInNonHTMLSection
-		ifTrue: [self nextNonHTMLToken]
-		ifFalse: [
-			streamReader peek == $<
+		ifTrue: [^ self nextNonHTMLToken].
+	
+	streamReader peek == $<
+		ifTrue: [
+			streamReader next.
+			(streamReader atEnd not and: [streamReader peek isSeparator])
 				ifTrue: [
-					streamReader next.
-					(streamReader atEnd not and: [streamReader peek isSeparator])
-						ifTrue: [
-							streamReader pushBack: '&lt;'.
-							self nextPCDataToken]
-						ifFalse: [self nextContentMarkupToken]]
-				ifFalse: [self nextPCDataToken]]
+					streamReader pushBack: '&lt;'.
+					^ self nextPCDataToken].
+			^ self nextContentMarkupToken].
+	self nextPCDataToken.
 ]
 
 { #category : #tokenizing }
@@ -2568,8 +2568,7 @@ HTMLParserTokenizer >> nextPCDataToken [
 	[(nextChar := streamReader peek) == $<
 		or: [nextChar == nil]]
 		whileFalse: [
-			streamReader next.
-			nextChar == $&
+			streamReader next == $&
 				ifTrue: [
 					(streamReader atEnd not
 						and: [streamReader peek isSeparator])
