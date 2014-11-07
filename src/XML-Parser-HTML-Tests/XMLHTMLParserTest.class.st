@@ -1,42 +1,42 @@
 Class {
-	#name : #HTMLParserTest,
+	#name : #XMLHTMLParserTest,
 	#superclass : #TestCase,
 	#category : #'XML-Parser-HTML-Tests'
 }
 
 { #category : #benchmarking }
-HTMLParserTest >> benchmark1 [
+XMLHTMLParserTest >> benchmark1 [
 	"
-	HTMLParserTest new benchmark1
+	self new benchmark1
 	"
 	Smalltalk garbageCollect.
-	^ [4000 timesRepeat: [HTMLHandler parse: XMLParserTest addressBookXML]] timeToRun
+	^ [4000 timesRepeat: [SAXHTMLHandler parse: XMLParserTest addressBookXML]] timeToRun
 ]
 
 { #category : #benchmarking }
-HTMLParserTest >> benchmark2 [
+XMLHTMLParserTest >> benchmark2 [
 	"
-	HTMLParserTest new benchmark2
+	self new benchmark2
 	"
 	Smalltalk garbageCollect.
-	^ [4000 timesRepeat: [HTMLParser parse: XMLParserTest addressBookXML]] timeToRun
+	^ [4000 timesRepeat: [XMLHTMLParser parse: XMLParserTest addressBookXML]] timeToRun
 ]
 
 { #category : #tests }
-HTMLParserTest >> testDecodingCharacters [
+XMLHTMLParserTest >> testDecodingCharacters [
 	self assert:
-		(HTMLParser parse: '&#60; &#x3C &#X3E &#62; &#0; &#-1 &#invalid; &#invalid &#')
+		(XMLHTMLParser parse: '&#60; &#x3C &#X3E &#62; &#0; &#-1 &#invalid; &#invalid &#')
 			contentString = '< < > > &#0; &#-1 &#invalid; &#invalid &#'.
 ]
 
 { #category : #tests }
-HTMLParserTest >> testHTMLEntities [
+XMLHTMLParserTest >> testHTMLEntities [
 	| entity character string |
 
 	entity := 'nbsp'.
-	character := HTMLParserTokenizer predefinedEntities at: entity.
+	character := XMLHTMLParserTokenizer predefinedEntities at: entity.
 	string :=
-		((HTMLParser parse: '<p>&', entity, ';&', entity, '</p>')
+		((XMLHTMLParser parse: '<p>&', entity, ';&', entity, '</p>')
 			findElementNamed: 'p') contentString.
 	self
 		assert: string size = 2;
@@ -44,15 +44,15 @@ HTMLParserTest >> testHTMLEntities [
 		assert: string second == character.
 		
 	self assert:
-		((HTMLParser parse: '<body>&undeclared; &undeclared &;')
+		((XMLHTMLParser parse: '<body>&undeclared; &undeclared &;')
 			findElementNamed: 'body') contentString = '&undeclared; &undeclared &;'.
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingAttributes [
+XMLHTMLParserTest >> testParsingAttributes [
 	| document element |
 
-	document := HTMLParser parse: '<test one="quoted" two=''subQuoted'' three=unquoted four'.
+	document := XMLHTMLParser parse: '<test one="quoted" two=''subQuoted'' three=unquoted four'.
 	element := document findElementNamed: 'test'.
 	self
 		assert: (element attributeAt: 'one') = 'quoted';
@@ -62,18 +62,18 @@ HTMLParserTest >> testParsingAttributes [
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingCDATA [
+XMLHTMLParserTest >> testParsingCDATA [
 	| document |
 
-	document := HTMLParser parse: '<body><![CDATA[ignored]]></body>'.
+	document := XMLHTMLParser parse: '<body><![CDATA[ignored]]></body>'.
 	self deny: (document findElementNamed: 'body') hasChildren.
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingForms [
+XMLHTMLParserTest >> testParsingForms [
 	| document |
 
-	document := HTMLParser parse: '<form><input><form><input>'.
+	document := XMLHTMLParser parse: '<form><input><form><input>'.
 
 	self assert:
 		(document allElements asArray collect: [:each | each name]) =
@@ -88,31 +88,31 @@ HTMLParserTest >> testParsingForms [
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingImplicitStartTag [
+XMLHTMLParserTest >> testParsingImplicitStartTag [
 	| paragraphs |
 
-	paragraphs := (HTMLParser parse: '</p></p>') allElementsNamed: 'p'.
+	paragraphs := (XMLHTMLParser parse: '</p></p>') allElementsNamed: 'p'.
 	self
 		assert: paragraphs size = 2;
 		deny: (paragraphs anySatisfy: [:each | each hasChildren]).
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingInvalidPCData [
+XMLHTMLParserTest >> testParsingInvalidPCData [
 	| document |
 
 	#('< one & two >' '& three < four >') do: [:each |
-		document := HTMLParser parse: each.
+		document := XMLHTMLParser parse: each.
 		self
 			assert: document allNodes size = 4;
 			assert: (document findElementNamed: 'body') contentString = each].
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingNonHTMLSections [
+XMLHTMLParserTest >> testParsingNonHTMLSections [
 	| document |
 
-	document := HTMLParser parse:
+	document := XMLHTMLParser parse:
 		'<head><Title><b>"title</b></TITLE><SCRIPT>',
 		'1 < 2; 3 > 2; document.write("</Script>");</Script>
 		<Style>//"</STYLE><HEAD>'.
@@ -124,10 +124,10 @@ HTMLParserTest >> testParsingNonHTMLSections [
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingTables [
+XMLHTMLParserTest >> testParsingTables [
 	| document tables trs tds |
 
-	document := HTMLParser parse: '<table><tr><td>one<td>two<tr><td>three<table><tr><td>four'.
+	document := XMLHTMLParser parse: '<table><tr><td>one<td>two<tr><td>three<table><tr><td>four'.
 	self assert:
 		(document allElements asArray collect: [:each | each name]) =
 			#('html' 'body' 'table' 'tr' 'td' 'td' 'tr' 'td' 'table' 'tr' 'td').
@@ -154,10 +154,10 @@ HTMLParserTest >> testParsingTables [
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingText [
+XMLHTMLParserTest >> testParsingText [
 	| document |
 	
-	document := HTMLParser parse: 'text'.
+	document := XMLHTMLParser parse: 'text'.
 	self
 		assert: document allNodes size = 4;
 		assert: (document allElementsCollect: [:each | each name]) asArray = #('html' 'body');
@@ -165,10 +165,10 @@ HTMLParserTest >> testParsingText [
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingVoidElements [
+XMLHTMLParserTest >> testParsingVoidElements [
 	| document |
 
-	document := HTMLParser parse: '<body>one<img>two</img><body>three'.
+	document := XMLHTMLParser parse: '<body>one<img>two</img><body>three'.
 	self
 		assert: (document allElementsCollect: [:each | each name]) asArray = #('html' 'body' 'img');
 		assert: (document findElementNamed: 'body') contentString = 'one twothree';
@@ -176,10 +176,10 @@ HTMLParserTest >> testParsingVoidElements [
 ]
 
 { #category : #tests }
-HTMLParserTest >> testParsingXML [
+XMLHTMLParserTest >> testParsingXML [
 	self
 		shouldnt: [
-			HTMLHandler
+			SAXHTMLHandler
 				parse: XMLParserTest addressBookXML;
 				parse: XMLParserTest addressBookXMLWithDTD;
 				parse: XMLDOMParserTest addressBookNamespacedXML;
@@ -188,34 +188,34 @@ HTMLParserTest >> testParsingXML [
 ]
 
 { #category : #tests }
-HTMLParserTest >> testProcessingInstructions [
+XMLHTMLParserTest >> testProcessingInstructions [
 	| document |
 
-	document := HTMLParser parse: '<body><?ignored data?></body>'.
+	document := XMLHTMLParser parse: '<body><?ignored data?></body>'.
 	self deny: (document findElementNamed: 'body') hasChildren.
 ]
 
 { #category : #tests }
-HTMLParserTest >> testReopeningHTML [
+XMLHTMLParserTest >> testReopeningHTML [
 	| document |
 
-	document := HTMLParser parse: '<html><B></body></html><I>'.
+	document := XMLHTMLParser parse: '<html><B></body></html><I>'.
 	self
 		assert: (document allElementsCollect: [:each | each name]) asArray = #('html' 'body' 'b' 'i');
 		assert: document root nodes size = 1;
 		assert: (document root firstElement elementsCollect: [:each | each name]) asArray = #('b' 'i').
 
-	document := HTMLParser parse: '<html><B>bold</body></html>normal'.
+	document := XMLHTMLParser parse: '<html><B>bold</body></html>normal'.
 	self
 		assert: (document allElementsCollect: [:each | each name]) asArray = #('html' 'body' 'b');
 		assert: (document findElementNamed: 'body') contentString = 'bold normal'.
 ]
 
 { #category : #tests }
-HTMLParserTest >> testReopeningHeadSection [
+XMLHTMLParserTest >> testReopeningHeadSection [
 	| document |
 
-	document := HTMLParser parse: '<head><p>text<Title>reopened'.
+	document := XMLHTMLParser parse: '<head><p>text<Title>reopened'.
 	self
 		assert: (document root elementsCollect: [:each | each name]) asArray = #('head' 'body');
 		assert: (document findElementNamed: 'head') elements size = 1;
@@ -225,16 +225,16 @@ HTMLParserTest >> testReopeningHeadSection [
 ]
 
 { #category : #tests }
-HTMLParserTest >> testXMLDeclaration [
+XMLHTMLParserTest >> testXMLDeclaration [
 	| document |
 
-	document := HTMLParser parse: '<?xml ?>'.
+	document := XMLHTMLParser parse: '<?xml ?>'.
 	self
 		assert: document version = 1.0;
 		assert: document encoding = 'UTF-8';
 		deny: document isStandalone.
 
-	document := HTMLParser parse: '<?xml version="onePointZero" encoding="UTF-16" standalone="yes"?>'.
+	document := XMLHTMLParser parse: '<?xml version="onePointZero" encoding="UTF-16" standalone="yes"?>'.
 	self
 		assert: document version = 1.0;
 		assert: document encoding = 'UTF-16';
