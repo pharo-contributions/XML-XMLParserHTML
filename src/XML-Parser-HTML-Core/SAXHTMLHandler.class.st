@@ -2,12 +2,12 @@
 This is class is a SAXHandler for HTML.
 "
 Class {
-	#name : #HTMLHandler,
+	#name : #SAXHTMLHandler,
 	#superclass : #SAXHandler,
 	#category : #'XML-Parser-HTML-Core'
 }
 
 { #category : #private }
-HTMLHandler >> driverClass [
-	^ HTMLParserDriver
+SAXHTMLHandler >> driverClass [
+	^ SAXHTMLParserDriver
 ]

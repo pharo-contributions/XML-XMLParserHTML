@@ -4,18 +4,18 @@ This class is a DOM parser that turns potentially invalid and malformed HTML int
 (When printing the DOM tree, use printWithoutSelfClosingTagsOn: or printedWithoutSelfClosingTags instead of printOn:, printString, or asString to avoid empty elements being printed as self-closing tags, because some (like <script/>) are not handled correctly by browsers.)
 "
 Class {
-	#name : #HTMLParser,
+	#name : #XMLHTMLParser,
 	#superclass : #XMLDOMParser,
 	#category : #'XML-Parser-HTML-Core'
 }
 
 { #category : #private }
-HTMLParser >> driverClass [
-	^ HTMLParserDriver
+XMLHTMLParser >> driverClass [
+	^ SAXHTMLParserDriver
 ]
 
 { #category : #content }
-HTMLParser >> endElement: anElementName prefix: aPrefix uri: aUri localName: aLocalName [
+XMLHTMLParser >> endElement: anElementName prefix: aPrefix uri: aUri localName: aLocalName [
 	(self topNode isElement
 		and: [self topNode isNamed: anElementName])
 		ifTrue: [self popNode]
@@ -23,7 +23,7 @@ HTMLParser >> endElement: anElementName prefix: aPrefix uri: aUri localName: aLo
 ]
 
 { #category : #content }
-HTMLParser >> startElement: aQualifiedName prefix: aPrefix uri: aUri localName: aLocalName attributes: aDictionary [
+XMLHTMLParser >> startElement: aQualifiedName prefix: aPrefix uri: aUri localName: aLocalName attributes: aDictionary [
 	| element |
 
 	(self document root notNil
@@ -41,7 +41,7 @@ HTMLParser >> startElement: aQualifiedName prefix: aPrefix uri: aUri localName: 
 ]
 
 { #category : #private }
-HTMLParser >> uniqueElementNamed: anElementName [
+XMLHTMLParser >> uniqueElementNamed: anElementName [
 	^ anElementName = 'html'
 		ifTrue: [self document root]
 		ifFalse: [

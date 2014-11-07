@@ -2,18 +2,18 @@
 This is the driver for the HTMLHandler. It uses the HTMLElementNester to make bad HTML nest correctly.
 "
 Class {
-	#name : #HTMLParserDriver,
+	#name : #SAXHTMLParserDriver,
 	#superclass : #SAXParserDriver,
 	#category : #'XML-Parser-HTML-Core'
 }
 
 { #category : #private }
-HTMLParserDriver >> elementNesterClass [
-	^ HTMLElementNester
+SAXHTMLParserDriver >> elementNesterClass [
+	^ XMLHTMLElementNester
 ]
 
 { #category : #private }
-HTMLParserDriver >> endElement: anElementName [
+SAXHTMLParserDriver >> endElement: anElementName [
 	| prefix |
 
 	self elementNester endElement: anElementName.
@@ -27,18 +27,18 @@ HTMLParserDriver >> endElement: anElementName [
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleCData: aString [
+SAXHTMLParserDriver >> handleCData: aString [
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleEndDTD [
+SAXHTMLParserDriver >> handleEndDTD [
 	self saxHandler
 		endInternalSubset;
 		endDTD.
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleEndDocument [
+SAXHTMLParserDriver >> handleEndDocument [
 	self elementNester
 		openElementsReverseDo: [:each | self endElement: each];
 		endNesting.
@@ -47,7 +47,7 @@ HTMLParserDriver >> handleEndDocument [
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleEndTag: anElementName [ 
+SAXHTMLParserDriver >> handleEndTag: anElementName [ 
 	(self elementNester isVoidElement: anElementName)
 		ifTrue: [^ self].
 	(self elementNester hasOpenElement: anElementName)
@@ -60,12 +60,12 @@ HTMLParserDriver >> handleEndTag: anElementName [
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleNonHTMLSection: aString [
+SAXHTMLParserDriver >> handleNonHTMLSection: aString [
 	self saxHandler characters: aString
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handlePCData: aString [
+SAXHTMLParserDriver >> handlePCData: aString [
 	self elementNester
 		beforePCDataElementsToEndDo: [:each | self endElement: each]
 		elementsToStartDo: [:each | self startElement: each].
@@ -74,15 +74,15 @@ HTMLParserDriver >> handlePCData: aString [
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handlePI: piTarget data: piData [
+SAXHTMLParserDriver >> handlePI: piTarget data: piData [
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleParseError: anError [
+SAXHTMLParserDriver >> handleParseError: anError [
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicId systemID: aSystemId [
+SAXHTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicId systemID: aSystemId [
 	self saxHandler
 		startDTD: aRoot
 		publicID: aPublicId
@@ -91,7 +91,7 @@ HTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicId systemID: aSystemI
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDictionary namespaces: aNamespaceDictionary [
+SAXHTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDictionary namespaces: aNamespaceDictionary [
 	(self elementNester isOpenUniqueElement: anElementName)
 		ifTrue: [^ self].
 
@@ -106,12 +106,12 @@ HTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDiction
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleWhitespace: aString [
+SAXHTMLParserDriver >> handleWhitespace: aString [
 	self saxHandler ignorableWhitespace: aString
 ]
 
 { #category : #'handling tokens' }
-HTMLParserDriver >> handleXMLVersion: aVersion encoding: anEncoding standalone: aYesOrNo [
+SAXHTMLParserDriver >> handleXMLVersion: aVersion encoding: anEncoding standalone: aYesOrNo [
 	self saxHandler
 		xmlVersion: ([aVersion asNumber] on: Error do: [:error | 1.0])
 		encoding: (anEncoding ifEmpty: 'UTF-8')
@@ -119,14 +119,14 @@ HTMLParserDriver >> handleXMLVersion: aVersion encoding: anEncoding standalone: 
 ]
 
 { #category : #private }
-HTMLParserDriver >> startElement: anElementName [
+SAXHTMLParserDriver >> startElement: anElementName [
 	self
 		startElement: anElementName
 		attributes: (OrderPreservingDictionary new: 5 withDefaultValue: '')
 ]
 
 { #category : #private }
-HTMLParserDriver >> startElement: anElementName attributes: anAttributeDictionary [
+SAXHTMLParserDriver >> startElement: anElementName attributes: anAttributeDictionary [
 	| prefix |
 
 	self elementNester startElement: anElementName.
@@ -141,6 +141,6 @@ HTMLParserDriver >> startElement: anElementName attributes: anAttributeDictionar
 ]
 
 { #category : #private }
-HTMLParserDriver >> tokenizerClass [
-	^ HTMLParserTokenizer
+SAXHTMLParserDriver >> tokenizerClass [
+	^ XMLHTMLParserTokenizer
 ]

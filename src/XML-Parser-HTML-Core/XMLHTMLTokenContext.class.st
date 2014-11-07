@@ -2,7 +2,7 @@
 This class adds HTML-specific contexts.
 "
 Class {
-	#name : #HTMLTokenContext,
+	#name : #XMLHTMLTokenContext,
 	#superclass : #XMLTokenContext,
 	#instVars : [
 		'nonHtmlElement'
@@ -11,22 +11,22 @@ Class {
 }
 
 { #category : #'changing context' }
-HTMLTokenContext >> enterNonHTMLSection: aTagName [
+XMLHTMLTokenContext >> enterNonHTMLSection: aTagName [
 	context := #inNonHTMLSection.
 	nonHtmlElement := aTagName.
 ]
 
 { #category : #testing }
-HTMLTokenContext >> isInContent [
+XMLHTMLTokenContext >> isInContent [
 	^ super isInContent or: [self isInNonHTMLSection]
 ]
 
 { #category : #testing }
-HTMLTokenContext >> isInNonHTMLSection [
+XMLHTMLTokenContext >> isInNonHTMLSection [
 	^ context == #inNonHTMLSection
 ]
 
 { #category : #accessing }
-HTMLTokenContext >> nonHtmlElement [
+XMLHTMLTokenContext >> nonHtmlElement [
 	^ nonHtmlElement
 ]

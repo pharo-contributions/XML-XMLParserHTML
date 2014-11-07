@@ -2,7 +2,7 @@
 This class can handle the nesting of HTML elements missing closing tags or with opening and closing tags in the wrong order.
 "
 Class {
-	#name : #HTMLElementNester,
+	#name : #XMLHTMLElementNester,
 	#superclass : #XMLElementNester,
 	#instVars : [
 		'openElementsByName'
@@ -16,7 +16,7 @@ Class {
 }
 
 { #category : #private }
-HTMLElementNester class >> bodySectionElements [
+XMLHTMLElementNester class >> bodySectionElements [
 	^ #('a' 'abbr' 'acronym' 'address' 'applet' 'area' 'article' 'aside' 'audio' 'b' 'basefont'
 		'bdi' 'bdo' 'big' 'blockquote' 'br' 'button' 'canvas' 'caption' 'center' 'cite' 'code'
 		'col' 'colgroup' 'command' 'data' 'datagrid' 'datalist' 'dd' 'del' 'details' 'dfn' 'dir'
@@ -30,19 +30,19 @@ HTMLElementNester class >> bodySectionElements [
 ]
 
 { #category : #private }
-HTMLElementNester class >> headSectionElements [
+XMLHTMLElementNester class >> headSectionElements [
 	^ #('base' 'isindex' 'link' 'meta' 'noscript' 'object' 'script' 'style' 'template' 'title')
 ]
 
 { #category : #private }
-HTMLElementNester class >> htmlTagInfoFor: aName [
+XMLHTMLElementNester class >> htmlTagInfoFor: aName [
 	^ HtmlTagInformation
 		at: aName
-		ifAbsentPut: [HTMLTagInformation named: aName]
+		ifAbsentPut: [XMLHTMLTagInformation named: aName]
 ]
 
 { #category : #'class initialization' }
-HTMLElementNester class >> initialize [
+XMLHTMLElementNester class >> initialize [
 	"self initialize"
 
 	super initialize.
@@ -53,7 +53,7 @@ HTMLElementNester class >> initialize [
 ]
 
 { #category : #'class initialization' }
-HTMLElementNester class >> initializeHTMLTagInformation [
+XMLHTMLElementNester class >> initializeHTMLTagInformation [
 	HtmlTagInformation := Dictionary new.
 
 	self bodySectionElements do: [:each |
@@ -74,17 +74,17 @@ HTMLElementNester class >> initializeHTMLTagInformation [
 ]
 
 { #category : #'class initialization' }
-HTMLElementNester class >> initializeUniqueElements [
+XMLHTMLElementNester class >> initializeUniqueElements [
 	UniqueElements := self uniqueElements
 ]
 
 { #category : #'class initialization' }
-HTMLElementNester class >> initializeVoidElements [
-	VoidElements := Set withAll: self voidElements
+XMLHTMLElementNester class >> initializeVoidElements [
+	VoidElements := self voidElements asSet
 ]
 
 { #category : #private }
-HTMLElementNester class >> mutuallyExcludingTags [
+XMLHTMLElementNester class >> mutuallyExcludingTags [
 	| mutuallyExcludingTags |
 
 	mutuallyExcludingTags := Dictionary new.
@@ -98,7 +98,7 @@ HTMLElementNester class >> mutuallyExcludingTags [
 ]
 
 { #category : #private }
-HTMLElementNester class >> nestableTagGroups [
+XMLHTMLElementNester class >> nestableTagGroups [
 	| nestableTagGroups |
 
 	nestableTagGroups := Dictionary new.
@@ -115,25 +115,25 @@ HTMLElementNester class >> nestableTagGroups [
 ]
 
 { #category : #private }
-HTMLElementNester class >> nonNestableElements [
+XMLHTMLElementNester class >> nonNestableElements [
 	^ #('a' 'applet' 'audio' 'button' 'footer' 'form' 'header' 'label' 'map'
 		'meter' 'optgroup' 'option' 'ruby' 'select' 'video'),
 		self nestableTagGroups keys asArray
 ]
 
 { #category : #private }
-HTMLElementNester class >> uniqueElements [
+XMLHTMLElementNester class >> uniqueElements [
 	^ #('html' 'head' 'body')
 ]
 
 { #category : #private }
-HTMLElementNester class >> voidElements [
+XMLHTMLElementNester class >> voidElements [
 	^ #('area' 'base' 'br' 'col' 'command' 'embed' 'hr' 'img' 'input' 'keygen'
 		'link' 'menuitem' 'meta' 'param' 'source' 'track' 'wbr')
 ]
 
 { #category : #checking }
-HTMLElementNester >> beforeEnding: anElementName elementsToEndDo: aBlock [
+XMLHTMLElementNester >> beforeEnding: anElementName elementsToEndDo: aBlock [
 	self openElementsReverseDo: [:each |
 		each = anElementName
 			ifTrue: [^ self].
@@ -141,7 +141,7 @@ HTMLElementNester >> beforeEnding: anElementName elementsToEndDo: aBlock [
 ]
 
 { #category : #checking }
-HTMLElementNester >> beforePCDataElementsToEndDo: aFirstBlock elementsToStartDo: aSecondBlock [
+XMLHTMLElementNester >> beforePCDataElementsToEndDo: aFirstBlock elementsToStartDo: aSecondBlock [
 	(self hasOpenElement: 'head')
 		ifTrue: [
 			self
@@ -156,13 +156,13 @@ HTMLElementNester >> beforePCDataElementsToEndDo: aFirstBlock elementsToStartDo:
 ]
 
 { #category : #checking }
-HTMLElementNester >> beforeStarting: anElementName elementsToEndDo: aFirstBlock elementsToStartDo: aSecondBlock [
+XMLHTMLElementNester >> beforeStarting: anElementName elementsToEndDo: aFirstBlock elementsToStartDo: aSecondBlock [
 	| htmlTag |
 
 	htmlTag :=
 		HtmlTagInformation
 			at: anElementName
-			ifAbsent: [HTMLTagInformation named: anElementName].
+			ifAbsent: [XMLHTMLTagInformation named: anElementName].
 			
 	self hasOpenElements
 		ifTrue: [
@@ -175,7 +175,7 @@ HTMLElementNester >> beforeStarting: anElementName elementsToEndDo: aFirstBlock 
 ]
 
 { #category : #private }
-HTMLElementNester >> cannotSelfNestTag: anHtmlTagInfo [
+XMLHTMLElementNester >> cannotSelfNestTag: anHtmlTagInfo [
 	| tagGroup |
 
 	(anHtmlTagInfo isNonNestable)
@@ -195,7 +195,7 @@ HTMLElementNester >> cannotSelfNestTag: anHtmlTagInfo [
 ]
 
 { #category : #private }
-HTMLElementNester >> currentSectionCannotContainTag: anHtmlTagInfo [
+XMLHTMLElementNester >> currentSectionCannotContainTag: anHtmlTagInfo [
 	^(anHtmlTagInfo isBodySectionOnlyTag
 		and: [self hasOpenElement: 'head'])
 			or: [anHtmlTagInfo isHeadSectionOnlyTag
@@ -203,7 +203,7 @@ HTMLElementNester >> currentSectionCannotContainTag: anHtmlTagInfo [
 ]
 
 { #category : #private }
-HTMLElementNester >> elementsToEndBeforeStartTag: anHtmlTagInfo do: aBlock [
+XMLHTMLElementNester >> elementsToEndBeforeStartTag: anHtmlTagInfo do: aBlock [
 	| excludingTag |
 
 	(anHtmlTagInfo isHeadOrBodyTag
@@ -223,7 +223,7 @@ HTMLElementNester >> elementsToEndBeforeStartTag: anHtmlTagInfo do: aBlock [
 ]
 
 { #category : #private }
-HTMLElementNester >> elementsToStartBeforeStartTag: anHtmlTagInfo do: aBlock [
+XMLHTMLElementNester >> elementsToStartBeforeStartTag: anHtmlTagInfo do: aBlock [
 	(anHtmlTagInfo name = 'html')
 		ifTrue: [^ self].
 	self hasOpenElements
@@ -239,7 +239,7 @@ HTMLElementNester >> elementsToStartBeforeStartTag: anHtmlTagInfo do: aBlock [
 ]
 
 { #category : #checking }
-HTMLElementNester >> endElement: anElementName [
+XMLHTMLElementNester >> endElement: anElementName [
 	| association |
 
 	association :=
@@ -252,48 +252,48 @@ HTMLElementNester >> endElement: anElementName [
 ]
 
 { #category : #testing }
-HTMLElementNester >> hasOpenElement: anElementName [
+XMLHTMLElementNester >> hasOpenElement: anElementName [
 	^ (self openElementsByName at: anElementName ifAbsent: [0]) > 0
 ]
 
 { #category : #initialization }
-HTMLElementNester >> initialize [
+XMLHTMLElementNester >> initialize [
 	super initialize.
 
 	openElementsByName := Dictionary new.
 ]
 
 { #category : #testing }
-HTMLElementNester >> isOpenUniqueElement: anElementName [
+XMLHTMLElementNester >> isOpenUniqueElement: anElementName [
 	^ (UniqueElements includes: anElementName)
 		and: [self hasOpenElement: anElementName]
 ]
 
 { #category : #testing }
-HTMLElementNester >> isVoidElement: anElementName [
+XMLHTMLElementNester >> isVoidElement: anElementName [
 	^ (HtmlTagInformation at: anElementName ifAbsent: [^ false]) isSelfClosing
 ]
 
 { #category : #private }
-HTMLElementNester >> mustStartBodySectionForTag: anHtmlTagInfo [
+XMLHTMLElementNester >> mustStartBodySectionForTag: anHtmlTagInfo [
 	^ (anHtmlTagInfo isBodySectionOnlyTag
 		or: [(self hasOpenElement: 'head') not])
 			and: [(self hasOpenElement: 'body') not]
 ]
 
 { #category : #private }
-HTMLElementNester >> mustStartHeadSectionForTag: anHtmlTagInfo [
+XMLHTMLElementNester >> mustStartHeadSectionForTag: anHtmlTagInfo [
 	^ anHtmlTagInfo isHeadSectionOnlyTag 
 		and: [(self hasOpenElement: 'head') not]
 ]
 
 { #category : #private }
-HTMLElementNester >> openElementsByName [
+XMLHTMLElementNester >> openElementsByName [
 	^ openElementsByName
 ]
 
 { #category : #checking }
-HTMLElementNester >> startElement: anElementName [
+XMLHTMLElementNester >> startElement: anElementName [
 	| association |
 
 	association :=
