@@ -15,22 +15,34 @@ XMLHTMLParser >> driverClass [
 ]
 
 { #category : #content }
-XMLHTMLParser >> endElement: anElementName prefix: aPrefix uri: aUri localName: aLocalName [
-	(self topNode isElement
-		and: [self topNode isNamed: anElementName])
-		ifTrue: [self popNode]
+XMLHTMLParser >> endElement: aQualifiedName prefix: aPrefix uri: aUri localName: aLocalName [
+	self topNode
+		ifNotNil: [:node |
+			(node isElement
+				and: [node name = aQualifiedName])
+				ifTrue: [self popNode]].
+]
 
+{ #category : #private }
+XMLHTMLParser >> pushInnerXMLRootNode: aRootNode [
+	aRootNode ancestorNodes reverseDo: [:each | self pushNode: each].
+	super pushInnerXMLRootNode: aRootNode.
 ]
 
 { #category : #content }
 XMLHTMLParser >> startElement: aQualifiedName prefix: aPrefix uri: aUri localName: aLocalName attributes: aDictionary [
-	| element |
+	| uniqueElement |
 
-	(self document root notNil
-		and: [(element := self uniqueElementNamed: aQualifiedName) notNil])
-		ifTrue: [
-			self pushNode: element.
-			^ self].
+	aQualifiedName = 'html'
+		ifTrue: [uniqueElement := self uniqueHtmlElement]
+		ifFalse: [
+			aQualifiedName = 'head'
+				ifTrue: [uniqueElement := self uniqueHeadElement]
+				ifFalse: [
+					aQualifiedName = 'body'
+						ifTrue: [uniqueElement := self uniqueBodyElement]]].
+	uniqueElement
+		ifNotNil: [^ self pushNode: uniqueElement].
 
 	super
 		startElement: aQualifiedName
@@ -41,11 +53,37 @@ XMLHTMLParser >> startElement: aQualifiedName prefix: aPrefix uri: aUri localNam
 ]
 
 { #category : #private }
-XMLHTMLParser >> uniqueElementNamed: anElementName [
-	^ anElementName = 'html'
-		ifTrue: [self document root]
-		ifFalse: [
-			(anElementName = 'head' or: [anElementName = 'body'])
-				ifTrue: [self document root elementAt: anElementName]
-				ifFalse: [nil]]
+XMLHTMLParser >> startInnerXMLElement: anElement forParser: aParser [
+	| elementNester |
+
+	(elementNester := aParser driver elementNester)
+		beforeStarting: anElement name
+		elementsToEndDo: [:each | ]
+		elementsToStartDo:  [:each | elementNester startElement: each];
+		startElement: anElement name
+]
+
+{ #category : #private }
+XMLHTMLParser >> uniqueBodyElement [
+	(self document notNil
+		and: [self document root notNil])
+		ifTrue: [^ self document root elementAt: 'body'].
+	^ nil.
+]
+
+{ #category : #private }
+XMLHTMLParser >> uniqueHeadElement [
+	(self document notNil
+		and: [self document root notNil])
+		ifTrue: [^ self document root elementAt: 'head'].
+	^ nil.
+]
+
+{ #category : #private }
+XMLHTMLParser >> uniqueHtmlElement [
+	(self document notNil
+		and: [self document root notNil
+			and: [self document root isNamed: 'html']])
+		ifTrue: [^ self document root].
+	^ nil.
 ]

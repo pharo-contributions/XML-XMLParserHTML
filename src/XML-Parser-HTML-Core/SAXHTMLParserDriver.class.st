@@ -18,12 +18,12 @@ SAXHTMLParserDriver >> endElement: anElementName [
 
 	self elementNester endElement: anElementName.
 
-	prefix := anElementName qualifiedNamePrefix.	
+	prefix := anElementName prefixBeforeLocalName.	
 	self saxHandler 
 		endElement: anElementName
 		prefix: prefix
 		uri: ''
-		localName: (anElementName qualifiedNameLocalPartFromPrefix: prefix)
+		localName: (anElementName localNameAfterPrefix: prefix)
 ]
 
 { #category : #'handling tokens' }
@@ -131,12 +131,12 @@ SAXHTMLParserDriver >> startElement: anElementName attributes: anAttributeDictio
 
 	self elementNester startElement: anElementName.
 
-	prefix := anElementName qualifiedNamePrefix.
+	prefix := anElementName prefixBeforeLocalName.
 	self saxHandler 
 		startElement: anElementName
 		prefix: prefix
 		uri: ''
-		localName: (anElementName qualifiedNameLocalPartFromPrefix: prefix)
+		localName: (anElementName localNameAfterPrefix: prefix)
 		attributes: anAttributeDictionary
 ]
 
