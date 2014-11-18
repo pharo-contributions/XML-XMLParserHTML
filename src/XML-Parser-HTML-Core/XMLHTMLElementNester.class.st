@@ -45,7 +45,6 @@ XMLHTMLElementNester class >> htmlTagInfoFor: aName [
 XMLHTMLElementNester class >> initialize [
 	"self initialize"
 
-	super initialize.
 	self
 		initializeUniqueElements;
 		initializeVoidElements;
