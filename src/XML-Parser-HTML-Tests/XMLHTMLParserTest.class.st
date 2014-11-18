@@ -4,6 +4,16 @@ Class {
 	#category : #'XML-Parser-HTML-Tests'
 }
 
+{ #category : #source }
+XMLHTMLParserTest >> addressBookXML [
+	^ XMLParserTest addressBookXML
+]
+
+{ #category : #source }
+XMLHTMLParserTest >> addressBookXMLWithDTD [
+	^ XMLParserTest addressBookXMLWithDTD
+]
+
 { #category : #benchmarking }
 XMLHTMLParserTest >> benchmark1 [
 	"
@@ -46,6 +56,40 @@ XMLHTMLParserTest >> testHTMLEntities [
 	self assert:
 		((XMLHTMLParser parse: '<body>&undeclared; &undeclared &;')
 			findElementNamed: 'body') contentString = '&undeclared; &undeclared &;'.
+]
+
+{ #category : #tests }
+XMLHTMLParserTest >> testInnerXML [
+	| document addressBook |
+
+	document := XMLHTMLParser parse: self addressBookXML.
+	addressBook := document findElementNamed: 'addressbook'.
+	addressBook firstNode innerXML: 'first'.
+	self assert: addressBook firstNode innerXML = 'first'.
+	addressBook nodes second innerXML: '<second>second</second>'.
+	self assert: addressBook nodes second innerXML = '<second>second</second>'.
+	addressBook nodes third innerXML: '<!--third-->'.
+	self assert: addressBook nodes third innerXML = ''.
+	addressBook lastNode innerXML: '<![CDATA[ignored]]>'.
+	self assert: addressBook lastNode innerXML = ''.
+	self
+		assert: addressBook nodes size = 4;
+		assert: (addressBook nodes allSatisfy: [:each | each isElementNamed: 'person']).
+]
+
+{ #category : #tests }
+XMLHTMLParserTest >> testInnerXMLElement [
+	| document addressBook person personStartTag |
+
+	document := XMLHTMLParser parse: self addressBookXML.
+	addressBook := document findElementNamed: 'addressbook'.
+	person := addressBook firstNode.
+	personStartTag := person printString copyUpTo: $>.
+	addressBook removeNode: person.
+	person innerXML: '<p>new</p>'.
+	self
+		assert: person innerXML = '<p>new</p>';
+		assert: person printString = (personStartTag, '><p>new</p></person>').
 ]
 
 { #category : #tests }
@@ -180,8 +224,8 @@ XMLHTMLParserTest >> testParsingXML [
 	self
 		shouldnt: [
 			SAXHTMLHandler
-				parse: XMLParserTest addressBookXML;
-				parse: XMLParserTest addressBookXMLWithDTD;
+				parse: self addressBookXML;
+				parse: self addressBookXMLWithDTD;
 				parse: XMLDOMParserTest addressBookNamespacedXML;
 				parse: XMLDOMParserTest addressBookNamespacePrefixedXML]
 		raise: XMLParserException
@@ -234,9 +278,9 @@ XMLHTMLParserTest >> testXMLDeclaration [
 		assert: document encoding = 'UTF-8';
 		deny: document isStandalone.
 
-	document := XMLHTMLParser parse: '<?xml version="onePointZero" encoding="UTF-16" standalone="yes"?>'.
+	document := XMLHTMLParser parse: '<?xml version="onePointZero" encoding="utf-8" standalone="yes"?>'.
 	self
 		assert: document version = 1.0;
-		assert: document encoding = 'UTF-16';
+		assert: document encoding = 'utf-8';
 		deny: document isStandalone.
 ]
