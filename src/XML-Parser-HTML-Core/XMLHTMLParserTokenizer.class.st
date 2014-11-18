@@ -5,6 +5,7 @@ Class {
 	#name : #XMLHTMLParserTokenizer,
 	#superclass : #XMLParserTokenizer,
 	#classVars : [
+		'HtmlEntities',
 		'HtmlNameDelimiters',
 		'NonHtmlCodeSectionTags',
 		'NonHtmlSectionTags'
@@ -59,6 +60,11 @@ XMLHTMLParserTokenizer class >> generateHTMLEntityPage [
 					namedEntities addLast: entityName -> codepoint]].
 
 	self compileHTMLEntityPageWithNamedEntities: namedEntities.
+]
+
+{ #category : #accessing }
+XMLHTMLParserTokenizer class >> htmlEntities [
+	^ HtmlEntities
 ]
 
 { #category : #'class initialization' }
@@ -2301,11 +2307,29 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 XMLHTMLParserTokenizer class >> initialize [
 	"self initialize"
 
-	super initialize.
 	self
+		initializeHTMLEntities;
 		initializeHTMLNameDelimiters;
 		initializeNonHTMLSectionTags;
 		initializeNonHTMLCodeSectionTags
+]
+
+{ #category : #'class initialization' }
+XMLHTMLParserTokenizer class >> initializeHTMLEntities [
+	| entityPage entityName codePoint |
+
+	HtmlEntities := Dictionary new.
+	entityPage := self htmlEntityPage readStream.
+	[entityPage atEnd]
+		whileFalse: [
+			entityPage skipTo: $[.
+			entityName := entityPage upTo: $=.
+			codePoint := (XMLIntegerReader readFrom: entityPage).
+			(entityName notEmpty and: [codePoint notNil])
+				ifTrue: [
+					HtmlEntities
+						at: entityName
+						put: codePoint asCharacter]].
 ]
 
 { #category : #'class initialization' }
@@ -2323,30 +2347,17 @@ XMLHTMLParserTokenizer class >> initializeHTMLNameDelimiters [
 
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initializeNonHTMLCodeSectionTags [
-	NonHtmlCodeSectionTags := Set with: 'script' with: 'style'
+	NonHtmlCodeSectionTags := #('script' 'style') asSet
 ]
 
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initializeNonHTMLSectionTags [
-	NonHtmlSectionTags := Set with: 'script' with: 'style' with: 'title' with: 'textarea'
+	NonHtmlSectionTags := #('script' 'style' 'title' 'textarea') asSet
 ]
 
-{ #category : #'class initialization' }
-XMLHTMLParserTokenizer class >> initializePredefinedEntities [
-	| entityPage entityName codePoint |
-
-	predefinedEntities := Dictionary new.
-	entityPage := self htmlEntityPage readStream.
-	[entityPage atEnd]
-		whileFalse: [
-			entityPage skipTo: $[.
-			entityName := entityPage upTo: $=.
-			codePoint := entityPage upTo: $].
-			(entityName notEmpty and: [codePoint notEmpty])
-				ifTrue: [
-					predefinedEntities
-						at: entityName
-						put: codePoint asInteger asCharacter]].
+{ #category : #accessing }
+XMLHTMLParserTokenizer class >> predefinedEntities [
+	^ self htmlEntities
 ]
 
 { #category : #testing }
@@ -2489,7 +2500,7 @@ XMLHTMLParserTokenizer >> nextGeneralEntityReference [
 	| name character |
 
 	character :=
-		self class predefinedEntities
+		HtmlEntities
 			at: (name := self nextName)
 			ifAbsent: [
 				streamReader pushBack: name.
