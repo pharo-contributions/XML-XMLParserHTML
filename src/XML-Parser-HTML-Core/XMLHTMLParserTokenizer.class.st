@@ -2413,8 +2413,22 @@ XMLHTMLParserTokenizer >> expectTerminator: aCharacter [
 ]
 
 { #category : #'tokenizing - expecting' }
+XMLHTMLParserTokenizer >> expectUpTo: aDelimiter [
+	| nextChar |
+
+	writeStream reset.
+	[streamReader atEnd
+		or: [(nextChar := streamReader next) == aDelimiter]]
+		whileFalse: [writeStream nextPut: nextChar].
+	^ writeStream contents.
+]
+
+{ #category : #'tokenizing - expecting' }
 XMLHTMLParserTokenizer >> expectUpToAll: aString [
-	^ streamReader upToAll: aString
+	writeStream reset.
+	[streamReader atEnd or: [streamReader nextMatchAll: aString]]
+		whileFalse: [writeStream nextPut: streamReader next].
+	^ writeStream contents.
 ]
 
 { #category : #tokenizing }
@@ -2667,7 +2681,7 @@ XMLHTMLParserTokenizer >> nextQuotedStringOn: aWriteStream [
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextQuotedValue [
 	^ streamReader atQuote
-		ifTrue: [streamReader upTo: streamReader next]
+		ifTrue: [self expectUpTo: streamReader next]
 		ifFalse: [self nextName]
 ]
 
