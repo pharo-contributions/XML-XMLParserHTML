@@ -2389,6 +2389,24 @@ XMLHTMLParserTokenizer >> atNonHTMLSectionEndTag [
 	^ matches.
 ]
 
+{ #category : #encodings }
+XMLHTMLParserTokenizer >> checkForCharsetInMetaAttributes: anAttributeDictionary [
+	anAttributeDictionary
+		at: 'charset'
+		ifPresent: [:charset |
+			streamReader convertFromEncoding: charset.
+			^ self].
+
+	(anAttributeDictionary at: 'http-equiv') = 'Content-Type'
+		ifFalse: [^ self].
+	anAttributeDictionary
+		at: 'content'
+		ifPresent: [:content |
+			((content copyAfter: $=) reject: [:each | each isSeparator])
+				ifNotEmpty: [:charset |
+					streamReader convertFromEncoding: charset]].
+]
+
 { #category : #'tokenizing - expecting' }
 XMLHTMLParserTokenizer >> expectNext: aCharacter [
 	(streamReader peek == aCharacter)
@@ -2713,13 +2731,13 @@ XMLHTMLParserTokenizer >> nextSystemLiteralRequired: aBoolean [
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextTag [
-	| tagName attributes attributeName  nextChar |
+	| tagName attributes attributeName nextChar |
 
 	(streamReader peek == $/)
 		ifTrue: [^ self nextEndTag].
 	tagName := self nextName asLowercase.
 
-	attributes := OrderPreservingDictionary new: 10 withDefaultValue: ''.
+	attributes := OrderPreservingStringDictionary new: 10.
 	[streamReader skipSeparators.
 	((nextChar := streamReader peek) == $>
 		or: [nextChar == $/
@@ -2729,13 +2747,16 @@ XMLHTMLParserTokenizer >> nextTag [
 			streamReader skipSeparators.
 			self expectNext: $=.
 			streamReader skipSeparators.
-			attributes at: attributeName put: self nextAttributeValue].
-
+			attributes
+				at: attributeName
+				put: self nextAttributeValue].
+	tagName = 'meta'
+		ifTrue: [self checkForCharsetInMetaAttributes: attributes].
 	driver
 		handleStartTag: tagName
 		attributes: attributes
 		namespaces: nil.
-	streamReader peek == $/
+	nextChar == $/
 		ifTrue: [
 			streamReader next.
 			driver handleEndTag: tagName]
