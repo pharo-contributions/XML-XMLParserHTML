@@ -2459,10 +2459,10 @@ XMLHTMLParserTokenizer >> nextAttributeValue [
 
 	context enterLiteralValue.
 	writeStream reset.
-	[(nextChar := streamReader peek) == quote
+	[(nextChar := streamReader next) == quote
 		or: [nextChar == nil]]
 		whileFalse: [
-			streamReader next == $&
+			nextChar == $&
 				ifTrue: [
 					streamReader peek == $#
 						ifTrue: [writeStream nextPut: self nextDecodedCharReference]
@@ -2472,22 +2472,33 @@ XMLHTMLParserTokenizer >> nextAttributeValue [
 				ifFalse: [writeStream nextPut: nextChar]].
 	context exitLiteralValue.
 
-	self expectNext: quote.
-
 	^ writeStream contents.
 ]
 
 { #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextContentToken [
-	streamReader peek == $<
+XMLHTMLParserTokenizer >> nextComment [
+	"Skip first -"
+	streamReader next.
+	self expectNext: $-.
+	driver handleComment: (self expectUpToAll: '-->').
+]
+
+{ #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextContentMarkupToken [
+	(streamReader atEnd not
+		and: [streamReader peek isSeparator])
+		ifTrue: [
+			streamReader pushBack: '&lt;'.
+			^ self nextPCDataToken].
+	streamReader peek == $?
+		ifTrue: [^ self nextPIOrXMLDeclaration].
+	streamReader peek == $!
 		ifTrue: [
 			streamReader next.
-			(streamReader atEnd not and: [streamReader peek isSeparator])
-				ifTrue: [
-					streamReader pushBack: '&lt;'.
-					^ self nextPCDataToken].
-			^ self nextContentMarkupToken].
-	self nextPCDataToken.
+			streamReader peek == $-
+				ifTrue: [^self nextComment].
+			^ self nextCDataSection].
+	self nextTag.
 ]
 
 { #category : #tokenizing }
