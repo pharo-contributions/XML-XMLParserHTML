@@ -2647,8 +2647,8 @@ XMLHTMLParserTokenizer >> nextPCDataToken [
 					writeStream nextPut: nextChar]].
 	isIgnorableWhitespace
 		ifTrue: [
-			writeStream position > 0
-				ifTrue: [driver handleWhitespace: writeStream contents]]
+			writeStream xmlParserAtBeginning
+				ifFalse: [driver handleWhitespace: writeStream contents]]
 		ifFalse: [driver handlePCData: writeStream contents].
 ]
 
