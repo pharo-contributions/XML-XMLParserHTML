@@ -33,29 +33,53 @@ XMLHTMLParserTest >> benchmark2 [
 ]
 
 { #category : #tests }
-XMLHTMLParserTest >> testDecodingCharacters [
+XMLHTMLParserTest >> testCharacterReferences [
 	self assert:
 		(XMLHTMLParser parse: '&#60; &#x3C &#X3E &#62; &#0; &#-1 &#invalid; &#invalid &#')
 			contentString = '< < > > &#0; &#-1 &#invalid; &#invalid &#'.
 ]
 
 { #category : #tests }
+XMLHTMLParserTest >> testCharacterReferencesUnreplaced [
+	self assert:
+		((XMLHTMLParser on: '&#60; &#x3C &#X3E &#62; &#0; &#-1 &#invalid; &#invalid &#')
+			replacesContentEntityReferences: false;
+			parseDocument) contentString = '&#60; &#x3C &#X3E &#62; &#0; &#-1 &#invalid; &#invalid &#'
+]
+
+{ #category : #tests }
 XMLHTMLParserTest >> testHTMLEntities [
-	| entity character string |
+	| entity character document p |
 
 	entity := 'nbsp'.
 	character := XMLHTMLParserTokenizer predefinedEntities at: entity.
-	string :=
-		((XMLHTMLParser parse: '<p>&', entity, ';&', entity, '</p>')
-			findElementNamed: 'p') contentString.
+	document :=
+		XMLHTMLParser parse:
+			'<p>&', entity, ';&', entity, '</p>',
+			'<div>&undeclared; &undeclared &;& ;'.
+
+	p := document findElementNamed: 'p'.
 	self
-		assert: string size = 2;
-		assert: string first == character;
-		assert: string second == character.
-		
-	self assert:
-		((XMLHTMLParser parse: '<body>&undeclared; &undeclared &;')
-			findElementNamed: 'body') contentString = '&undeclared; &undeclared &;'.
+		assert: p contentString size = 2;
+		assert: (p contentString allSatisfy: [:each | each == character]);
+		assert: (document findElementNamed: 'div') contentString = '&undeclared; &undeclared &;& ;'.
+]
+
+{ #category : #tests }
+XMLHTMLParserTest >> testHTMLEntitiesUnreplaced [
+	| entity character document |
+
+	entity := 'nbsp'.
+	character := XMLHTMLParserTokenizer predefinedEntities at: entity.
+	document :=
+		(XMLHTMLParser on:
+			'<p>&', entity, ';&', entity, '</p>',
+			'<div>&undeclared; &undeclared &;& ;')
+			replacesContentEntityReferences: false;
+			parseDocument.
+	self
+		assert: (document findElementNamed: 'p') contentString = '&nbsp;&nbsp';
+		assert: (document findElementNamed: 'div') contentString = '&undeclared; &undeclared &;& ;'.
 ]
 
 { #category : #tests }
