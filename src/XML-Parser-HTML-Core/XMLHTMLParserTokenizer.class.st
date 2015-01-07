@@ -2465,14 +2465,40 @@ XMLHTMLParserTokenizer >> nextAttributeValue [
 			nextChar == $&
 				ifTrue: [
 					streamReader peek == $#
-						ifTrue: [writeStream nextPut: self nextDecodedCharReference]
-						ifFalse: [
-							(nextChar := self nextGeneralEntityReference)
-								ifNotNil: [writeStream nextPut: nextChar]]]
+						ifTrue: [self nextCharacterReferenceOnWriteStream]
+						ifFalse: [self nextGeneralEntityReferenceOnWriteStream]]
 				ifFalse: [writeStream nextPut: nextChar]].
 	context exitLiteralValue.
 
 	^ writeStream contents.
+]
+
+{ #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextCharacterReferenceOnWriteStream [
+	| codePointString reader character |
+
+	"skip $#"
+	streamReader next.
+	codePointString := self nextName.
+	reader := XMLIntegerReader on: codePointString readStream.
+	character :=
+		self characterFromCodePoint:
+			(reader 
+				nextIntegerWithBase: 16
+				startingWithAny: 'Xx'
+				orBase: 10).
+	(character notNil
+		and: [reader atEnd
+			and: [driver replacesContentEntityReferences]])
+		ifFalse: [
+			writeStream
+				nextPutAll: '&#';
+				nextPutAll: codePointString.
+			^ true].
+	streamReader peek == $; "; is optional"
+		ifTrue: [streamReader next].
+	writeStream nextPut: character.
+	^ true.
 ]
 
 { #category : #tokenizing }
@@ -2502,31 +2528,6 @@ XMLHTMLParserTokenizer >> nextContentMarkupToken [
 ]
 
 { #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextDecodedCharReference [
-	| codePoint reader character |
-
-	"skip $#"
-	streamReader next.
-
-	codePoint := self nextName.
-	reader := XMLIntegerReader on: codePoint readStream.
-	character :=
-		self characterFromCodePoint:
-			(reader 
-				nextIntegerWithBase: 16
-				startingWithAny: 'Xx'
-				orBase: 10).
-	(character notNil and: [reader atEnd])
-		ifTrue: [
-			streamReader peek == $; "; is optional"
-				ifTrue: [streamReader next].
-			^ character]
-		ifFalse: [
-			streamReader pushBack: (codePoint copyWithFirst: $#).
-			^ $&].
-]
-
-{ #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextEndTag [
 	| tagName |
 
@@ -2539,18 +2540,20 @@ XMLHTMLParserTokenizer >> nextEndTag [
 ]
 
 { #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextGeneralEntityReference [
+XMLHTMLParserTokenizer >> nextGeneralEntityReferenceOnWriteStream [
 	| name character |
 
+	name := self nextName.
 	character :=
 		HtmlEntities
-			at: (name := self nextName)
-			ifAbsent: [
-				streamReader pushBack: name.
-				^ $&].
+			at: name
+			ifAbsent: [^ self nextUnreplacedGeneralEntityOnWriteStreamNamed: name].
+	driver replacesContentEntityReferences
+		ifFalse: [^ self nextUnreplacedGeneralEntityOnWriteStreamNamed: name].
 	streamReader peek == $; "; is optional"
 		ifTrue: [streamReader next].
-	^ character.
+	writeStream nextPut: character.
+	^ true.
 ]
 
 { #category : #tokenizing }
@@ -2591,7 +2594,7 @@ XMLHTMLParserTokenizer >> nextNonHTMLCodeSectionToken [
 					writeStream nextPut: nextChar]
 				ifFalse: [
 					streamReader atQuote
-						ifTrue: [self nextQuotedStringOn: writeStream]
+						ifTrue: [self nextQuotedStringOnWriteStream]
 						ifFalse: [
 							(((nextChar := streamReader next) == $/)
 								and: [streamReader peek == $*
@@ -2634,13 +2637,10 @@ XMLHTMLParserTokenizer >> nextPCDataToken [
 							writeStream nextPut: $&.
 							isIgnorableWhitespace := false]
 						ifFalse: [
-							(nextChar :=
-								streamReader peek == $#
-									ifTrue: [self nextDecodedCharReference]
-									ifFalse: [self nextGeneralEntityReference])
-								ifNotNil: [
-									writeStream nextPut: nextChar.
-									isIgnorableWhitespace := false]]]
+							(streamReader peek == $#
+								ifTrue: [self nextCharacterReferenceOnWriteStream]
+								ifFalse: [self nextGeneralEntityReferenceOnWriteStream])
+								ifTrue: [isIgnorableWhitespace := false]]]
 				ifFalse: [
 					isIgnorableWhitespace
 						ifTrue: [isIgnorableWhitespace := nextChar isSeparator].
@@ -2658,7 +2658,7 @@ XMLHTMLParserTokenizer >> nextPITarget [
 ]
 
 { #category : #'tokenizing - dtd' }
-XMLHTMLParserTokenizer >> nextParameterEntityReference [
+XMLHTMLParserTokenizer >> nextParameterEntityReferenceOnWriteStream [
 	self
 		nextName;
 		expectNext: $;
@@ -2696,15 +2696,15 @@ XMLHTMLParserTokenizer >> nextPubidLiteral [
 ]
 
 { #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextQuotedStringOn: aWriteStream [
+XMLHTMLParserTokenizer >> nextQuotedStringOnWriteStream [
 	| quote |
 
 	quote := streamReader next.
-	aWriteStream nextPut: quote.
+	writeStream nextPut: quote.
 	[streamReader atEnd or: [streamReader peek == quote]]
-		whileFalse: [aWriteStream nextPut: streamReader next].
+		whileFalse: [writeStream nextPut: streamReader next].
 	streamReader next.
-	aWriteStream nextPut: quote.
+	writeStream nextPut: quote.
 ]
 
 { #category : #tokenizing }
@@ -2775,6 +2775,15 @@ XMLHTMLParserTokenizer >> nextTag [
 			(NonHtmlSectionTags includes: tagName)
 				ifTrue: [self nextStartNonHTMLElement: tagName]].
 	self expectTerminator: $>.
+]
+
+{ #category : #'entity replacement' }
+XMLHTMLParserTokenizer >> nextUnreplacedGeneralEntityOnWriteStreamNamed: aName [
+	driver handleUnreplacedGeneralEntityReference: aName.
+	writeStream
+		nextPut: $&;
+		nextPutAll: aName.
+	^ true.
 ]
 
 { #category : #tokenizing }
