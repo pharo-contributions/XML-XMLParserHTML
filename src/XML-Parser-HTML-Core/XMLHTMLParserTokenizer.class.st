@@ -2658,7 +2658,7 @@ XMLHTMLParserTokenizer >> nextPITarget [
 ]
 
 { #category : #'tokenizing - dtd' }
-XMLHTMLParserTokenizer >> nextParameterEntityReferenceOnWriteStream [
+XMLHTMLParserTokenizer >> nextParameterEntityReference [
 	self
 		nextName;
 		expectNext: $;
