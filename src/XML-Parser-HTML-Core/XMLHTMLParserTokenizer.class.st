@@ -2389,7 +2389,7 @@ XMLHTMLParserTokenizer >> atNonHTMLSectionEndTag [
 	^ matches.
 ]
 
-{ #category : #encodings }
+{ #category : #'encoding detection' }
 XMLHTMLParserTokenizer >> checkForCharsetInMetaAttributes: anAttributeDictionary [
 	anAttributeDictionary
 		at: 'charset'
@@ -2777,7 +2777,7 @@ XMLHTMLParserTokenizer >> nextTag [
 	self expectTerminator: $>.
 ]
 
-{ #category : #'entity replacement' }
+{ #category : #'entity replacing' }
 XMLHTMLParserTokenizer >> nextUnreplacedGeneralEntityOnWriteStreamNamed: aName [
 	driver handleUnreplacedGeneralEntityReference: aName.
 	writeStream
