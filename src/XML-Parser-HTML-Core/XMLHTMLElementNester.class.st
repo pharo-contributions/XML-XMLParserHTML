@@ -8,7 +8,7 @@ Class {
 		'openElementsByName'
 	],
 	#classVars : [
-		'HtmlTagInformation',
+		'HTMLTagInformation',
 		'UniqueElements',
 		'VoidElements'
 	],
@@ -36,7 +36,7 @@ XMLHTMLElementNester class >> headSectionElements [
 
 { #category : #private }
 XMLHTMLElementNester class >> htmlTagInfoFor: aName [
-	^ HtmlTagInformation
+	^ HTMLTagInformation
 		at: aName
 		ifAbsentPut: [XMLHTMLTagInformation named: aName]
 ]
@@ -48,12 +48,12 @@ XMLHTMLElementNester class >> initialize [
 	self
 		initializeUniqueElements;
 		initializeVoidElements;
-		initializeHTMLTagInformation.
+		initializeHTMLTagInformation
 ]
 
 { #category : #'class initialization' }
 XMLHTMLElementNester class >> initializeHTMLTagInformation [
-	HtmlTagInformation := Dictionary new.
+	HTMLTagInformation := Dictionary new.
 
 	self bodySectionElements do: [:each |
 		(self htmlTagInfoFor: each) isBodySectionTag: true].
@@ -159,7 +159,7 @@ XMLHTMLElementNester >> beforeStarting: anElementName elementsToEndDo: aFirstBlo
 	| htmlTag |
 
 	htmlTag :=
-		HtmlTagInformation
+		HTMLTagInformation
 			at: anElementName
 			ifAbsent: [XMLHTMLTagInformation named: anElementName].
 			
@@ -270,7 +270,7 @@ XMLHTMLElementNester >> isOpenUniqueElement: anElementName [
 
 { #category : #testing }
 XMLHTMLElementNester >> isVoidElement: anElementName [
-	^ (HtmlTagInformation at: anElementName ifAbsent: [^ false]) isSelfClosing
+	^ (HTMLTagInformation at: anElementName ifAbsent: [^ false]) isSelfClosing
 ]
 
 { #category : #private }

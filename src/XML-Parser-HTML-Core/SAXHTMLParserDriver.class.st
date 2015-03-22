@@ -26,18 +26,18 @@ SAXHTMLParserDriver >> endElement: anElementName [
 		localName: (anElementName localNameAfterPrefix: prefix)
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #handling }
 SAXHTMLParserDriver >> handleCData: aString [
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #'handling - dtd' }
 SAXHTMLParserDriver >> handleEndDTD [
 	self saxHandler
 		endInternalSubset;
 		endDTD.
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #handling }
 SAXHTMLParserDriver >> handleEndDocument [
 	self elementNester
 		openElementsReverseDo: [:each | self endElement: each];
@@ -46,7 +46,7 @@ SAXHTMLParserDriver >> handleEndDocument [
 	self saxHandler endDocument.
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #handling }
 SAXHTMLParserDriver >> handleEndTag: anElementName [ 
 	(self elementNester isVoidElement: anElementName)
 		ifTrue: [^ self].
@@ -59,12 +59,12 @@ SAXHTMLParserDriver >> handleEndTag: anElementName [
 	self endElement: anElementName.
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #handling }
 SAXHTMLParserDriver >> handleNonHTMLSection: aString [
 	self saxHandler characters: aString
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #handling }
 SAXHTMLParserDriver >> handlePCData: aString [
 	self elementNester
 		beforePCDataElementsToEndDo: [:each | self endElement: each]
@@ -73,24 +73,24 @@ SAXHTMLParserDriver >> handlePCData: aString [
 	self saxHandler characters: aString.
 ]
 
-{ #category : #'handling tokens' }
-SAXHTMLParserDriver >> handlePI: piTarget data: piData [
+{ #category : #handling }
+SAXHTMLParserDriver >> handlePI: aTargetString data: aDataString [
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #handling }
 SAXHTMLParserDriver >> handleParseError: anError [
 ]
 
-{ #category : #'handling tokens' }
-SAXHTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicId systemID: aSystemId [
+{ #category : #'handling - dtd' }
+SAXHTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicID systemID: aSystemID [
 	self saxHandler
 		startDTD: aRoot
-		publicID: aPublicId
-		systemID: aSystemId;
+		publicID: aPublicID
+		systemID: aSystemID;
 		startInternalSubset.
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #handling }
 SAXHTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDictionary namespaces: aNamespaceDictionary [
 	(self elementNester isOpenUniqueElement: anElementName)
 		ifTrue: [^ self].
@@ -105,12 +105,12 @@ SAXHTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDict
 		ifTrue: [self endElement: anElementName].
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #handling }
 SAXHTMLParserDriver >> handleWhitespace: aString [
 	self saxHandler ignorableWhitespace: aString
 ]
 
-{ #category : #'handling tokens' }
+{ #category : #handling }
 SAXHTMLParserDriver >> handleXMLVersion: aVersion encoding: anEncoding standalone: aYesOrNo [
 	self saxHandler
 		xmlVersion: ([aVersion asNumber] on: Error do: [:error | 1.0])

@@ -5,10 +5,10 @@ Class {
 	#name : #XMLHTMLParserTokenizer,
 	#superclass : #XMLParserTokenizer,
 	#classVars : [
-		'HtmlEntities',
-		'HtmlNameDelimiters',
-		'NonHtmlCodeSectionTags',
-		'NonHtmlSectionTags'
+		'HTMLEntities',
+		'HTMLNameDelimiters',
+		'NonHTMLCodeSectionTags',
+		'NonHTMLSectionTags'
 	],
 	#category : #'XML-Parser-HTML-Core'
 }
@@ -64,7 +64,7 @@ XMLHTMLParserTokenizer class >> generateHTMLEntityPage [
 
 { #category : #accessing }
 XMLHTMLParserTokenizer class >> htmlEntities [
-	^ HtmlEntities
+	^ HTMLEntities
 ]
 
 { #category : #'class initialization' }
@@ -2306,7 +2306,6 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initialize [
 	"self initialize"
-
 	self
 		initializeHTMLEntities;
 		initializeHTMLNameDelimiters;
@@ -2318,7 +2317,7 @@ XMLHTMLParserTokenizer class >> initialize [
 XMLHTMLParserTokenizer class >> initializeHTMLEntities [
 	| entityPage entityName codePoint |
 
-	HtmlEntities := Dictionary new.
+	HTMLEntities := Dictionary new.
 	entityPage := self htmlEntityPage readStream.
 	[entityPage atEnd]
 		whileFalse: [
@@ -2327,14 +2326,14 @@ XMLHTMLParserTokenizer class >> initializeHTMLEntities [
 			codePoint := (XMLIntegerReader readFrom: entityPage).
 			(entityName notEmpty and: [codePoint notNil])
 				ifTrue: [
-					HtmlEntities
+					HTMLEntities
 						at: entityName
 						put: codePoint asCharacter]].
 ]
 
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initializeHTMLNameDelimiters [
-	(HtmlNameDelimiters := BitmapCharacterSet new)
+	(HTMLNameDelimiters := BitmapCharacterSet new)
 		addAll: Character separators;
 		add: $>;
 		add: $/;
@@ -2347,12 +2346,12 @@ XMLHTMLParserTokenizer class >> initializeHTMLNameDelimiters [
 
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initializeNonHTMLCodeSectionTags [
-	NonHtmlCodeSectionTags := #('script' 'style') asSet
+	NonHTMLCodeSectionTags := #('script' 'style') asSet
 ]
 
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initializeNonHTMLSectionTags [
-	NonHtmlSectionTags := #('script' 'style' 'title' 'textarea') asSet
+	NonHTMLSectionTags := #('script' 'style' 'title' 'textarea') asSet
 ]
 
 { #category : #accessing }
@@ -2383,13 +2382,13 @@ XMLHTMLParserTokenizer >> atNonHTMLSectionEndTag [
 		streamReader next].
 	matches :=
 		streamReader atEnd not
-			and: [HtmlNameDelimiters includes: streamReader peek].
+			and: [HTMLNameDelimiters includes: streamReader peek].
 	streamReader pushBack: '</', elementName.
 
 	^ matches.
 ]
 
-{ #category : #'encoding detection' }
+{ #category : #encodings }
 XMLHTMLParserTokenizer >> checkForCharsetInMetaAttributes: anAttributeDictionary [
 	anAttributeDictionary
 		at: 'charset'
@@ -2545,7 +2544,7 @@ XMLHTMLParserTokenizer >> nextGeneralEntityReferenceOnWriteStream [
 
 	name := self nextName.
 	character :=
-		HtmlEntities
+		HTMLEntities
 			at: name
 			ifAbsent: [^ self nextUnreplacedGeneralEntityOnWriteStreamNamed: name].
 	driver replacesContentEntityReferences
@@ -2562,7 +2561,7 @@ XMLHTMLParserTokenizer >> nextName [
 
 	nameStream reset.
 	 [(nextChar := streamReader peek) == nil
-		or: [(HtmlNameDelimiters includes: nextChar)
+		or: [(HTMLNameDelimiters includes: nextChar)
 			or: [(context isDoctypeContext and: [nextChar == $[])
 				or: [context isInternalSubsetContext and: [nextChar == $]]]]]]
 		whileFalse: [nameStream nextPut: streamReader next].
@@ -2717,7 +2716,7 @@ XMLHTMLParserTokenizer >> nextQuotedValue [
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextStartNonHTMLElement: anElement [
 	context := 
-		((NonHtmlCodeSectionTags includes: anElement)
+		((NonHTMLCodeSectionTags includes: anElement)
 			ifTrue: [XMLHTMLNonHTMLCodeSectionContext]
 			ifFalse: [XMLHTMLNonHTMLSectionContext]) element: anElement
 ]
@@ -2772,12 +2771,12 @@ XMLHTMLParserTokenizer >> nextTag [
 			streamReader next.
 			driver handleEndTag: tagName]
 		ifFalse: [
-			(NonHtmlSectionTags includes: tagName)
+			(NonHTMLSectionTags includes: tagName)
 				ifTrue: [self nextStartNonHTMLElement: tagName]].
 	self expectTerminator: $>.
 ]
 
-{ #category : #'entity replacing' }
+{ #category : #'entity replacement' }
 XMLHTMLParserTokenizer >> nextUnreplacedGeneralEntityOnWriteStreamNamed: aName [
 	driver handleUnreplacedGeneralEntityReference: aName.
 	writeStream

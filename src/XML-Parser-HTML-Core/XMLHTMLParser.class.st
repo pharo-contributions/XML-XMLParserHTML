@@ -14,8 +14,8 @@ XMLHTMLParser >> driverClass [
 	^ SAXHTMLParserDriver
 ]
 
-{ #category : #'handling - content' }
-XMLHTMLParser >> endElement: aQualifiedName prefix: aPrefix uri: aUri localName: aLocalName [
+{ #category : #content }
+XMLHTMLParser >> endElement: aQualifiedName prefix: aPrefix uri: aURI localName: aLocalName [
 	self topNode
 		ifNotNil: [:node |
 			(node isElement
@@ -29,8 +29,8 @@ XMLHTMLParser >> pushInnerXMLRootNode: aRootNode [
 	super pushInnerXMLRootNode: aRootNode.
 ]
 
-{ #category : #'handling - content' }
-XMLHTMLParser >> startElement: aQualifiedName prefix: aPrefix uri: aUri localName: aLocalName attributes: aDictionary [
+{ #category : #content }
+XMLHTMLParser >> startElement: aQualifiedName prefix: aPrefix uri: aURI localName: aLocalName attributes: aDictionary [
 	| uniqueElement |
 
 	aQualifiedName = 'html'
@@ -47,7 +47,7 @@ XMLHTMLParser >> startElement: aQualifiedName prefix: aPrefix uri: aUri localNam
 	super
 		startElement: aQualifiedName
 		prefix: aPrefix
-		uri: aUri
+		uri: aURI
 		localName: aLocalName
 		attributes: aDictionary.
 ]
