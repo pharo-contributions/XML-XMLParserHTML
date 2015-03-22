@@ -166,10 +166,23 @@ XMLHTMLParserTest >> testParsingCDATA [
 ]
 
 { #category : #tests }
-XMLHTMLParserTest >> testParsingDTDs [
-	| xmlWithDtd document |
+XMLHTMLParserTest >> testParsingComments [
+	| document |
 
-	xmlWithDtd :=
+	document :=
+		(XMLHTMLParser on: '<body><!--comment can have -- before end --></body>')
+			preservesCommentNodes: true;
+			parseDocument.
+	self
+		assert: (document findElementNamed: 'body') firstNode isComment;
+		assert: (document findElementNamed: 'body') firstNode string = 'comment can have -- before end '
+]
+
+{ #category : #tests }
+XMLHTMLParserTest >> testParsingDTDs [
+	| xml document |
+
+	xml :=
 		'<!DOCTYPE root PUBLIC "pubid" "external.dtd" [
 			<!ELEMENT root ( #PCDATA | one | two)* >
 			<!ATTLIST root
@@ -183,7 +196,7 @@ XMLHTMLParserTest >> testParsingDTDs [
 			<!NOTATION notation SYSTEM "note.doc">]>
 		<p>&generalTwo;</p>'.
 	self
-		shouldnt: [document := XMLHTMLParser parse: xmlWithDtd]
+		shouldnt: [document := XMLHTMLParser parse: xml]
 		raise: XMLParserException.
 	self
 		assert: document nodes size = 1;
