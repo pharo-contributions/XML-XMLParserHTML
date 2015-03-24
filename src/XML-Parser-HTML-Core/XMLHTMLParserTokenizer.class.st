@@ -2678,15 +2678,16 @@ XMLHTMLParserTokenizer >> nextPrologToken [
 						ifTrue: [^ self nextComment].
 				^ self nextDoctypeDeclaration].
 
-			context := context contentContext.
+			self nextStartContent.
 			^ (streamReader atEnd not and: [streamReader peek isSeparator])
 				ifTrue: [
 					streamReader pushBackCharacter: $<.
 					self nextContentToken]
 				ifFalse: [self nextTag]].
 
-	context := context contentContext.
-	^ self nextContentToken.
+	self
+		nextStartContent;
+		nextContentToken.
 ]
 
 { #category : #'tokenizing - dtd' }

@@ -32,9 +32,7 @@ SAXHTMLParserDriver >> handleCData: aString [
 
 { #category : #'handling - dtd' }
 SAXHTMLParserDriver >> handleEndDTD [
-	self saxHandler
-		endInternalSubset;
-		endDTD.
+	self saxHandler endDTD
 ]
 
 { #category : #handling }
@@ -86,8 +84,7 @@ SAXHTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicID systemID: aSyst
 	self saxHandler
 		startDTD: aRoot
 		publicID: aPublicID
-		systemID: aSystemID;
-		startInternalSubset.
+		systemID: aSystemID.
 ]
 
 { #category : #handling }
