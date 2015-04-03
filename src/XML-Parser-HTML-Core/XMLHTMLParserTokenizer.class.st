@@ -2425,7 +2425,13 @@ XMLHTMLParserTokenizer >> expectNextAll: aString [
 ]
 
 { #category : #'tokenizing - expecting' }
+XMLHTMLParserTokenizer >> expectTerminator [
+	streamReader skipTo: $>
+]
+
+{ #category : #'tokenizing - expecting' }
 XMLHTMLParserTokenizer >> expectTerminator: aCharacter [
+	"kept for compatibility with older versions"
 	streamReader skipTo: aCharacter
 ]
 
@@ -2528,14 +2534,11 @@ XMLHTMLParserTokenizer >> nextContentMarkupToken [
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextEndTag [
-	| tagName |
-
+	"Skip /"
 	streamReader next.
-	tagName := self nextName asLowercase.
+	driver handleEndTag: self nextName asLowercase.
 	streamReader skipSeparators.
-	self expectTerminator: $>.
-
-	driver handleEndTag: tagName.
+	self expectTerminator.
 ]
 
 { #category : #tokenizing }
@@ -2753,10 +2756,11 @@ XMLHTMLParserTokenizer >> nextTag [
 	((nextChar := streamReader peek) == $>
 		or: [nextChar == $/
 			or: [nextChar == nil
-				or: [(attributeName := self nextName asLowercase) isEmpty]]])]
+				or: [(attributeName := self nextName asLowercase) size = 0]]])]
 		whileFalse: [
 			streamReader skipSeparators.
-			self expectNext: $=.
+			(streamReader peek == $=)
+				ifTrue: [streamReader next].
 			streamReader skipSeparators.
 			attributes
 				at: attributeName
@@ -2774,7 +2778,7 @@ XMLHTMLParserTokenizer >> nextTag [
 		ifFalse: [
 			(NonHTMLSectionTags includes: tagName)
 				ifTrue: [self nextStartNonHTMLElement: tagName]].
-	self expectTerminator: $>.
+	self expectTerminator.
 ]
 
 { #category : #'entity replacement' }
