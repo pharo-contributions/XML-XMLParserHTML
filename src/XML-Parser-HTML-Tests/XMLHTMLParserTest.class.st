@@ -172,6 +172,11 @@ XMLHTMLParserTest >> testIsInContent [
 ]
 
 { #category : #tests }
+XMLHTMLParserTest >> testParseHTML [
+	self assert: 'test' parseHTML printString = '<html><body>test</body></html>'
+]
+
+{ #category : #tests }
 XMLHTMLParserTest >> testParsingAttributes [
 	| document element |
 
