@@ -215,9 +215,10 @@ XMLHTMLParserTest >> testParsingDTDs [
 	| xml document |
 
 	xml :=
-		'<!DOCTYPE root PUBLIC "pubid" "external.dtd" [
+		'<!DOCTYPE root PUBLIC "pubid""external.dtd" [
 			<!ELEMENT root ( #PCDATA | one | two)* >
 			<!ATTLIST root
+						%entity;
 						name CDATA #IMPLIED
 						number ( %one; | two | three ) "three">
 			<!ENTITY general "replacement">
