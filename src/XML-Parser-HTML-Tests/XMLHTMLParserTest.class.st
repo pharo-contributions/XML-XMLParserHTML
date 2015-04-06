@@ -195,6 +195,14 @@ XMLHTMLParserTest >> testParsingCDATA [
 
 	document := XMLHTMLParser parse: '<body><![CDATA[ignored]]></body>'.
 	self deny: (document findElementNamed: 'body') hasChildren.
+
+	#('<![CDATA[ignored]]><html><body/>'
+		'<!DOCTYPE><![CDATA[ignored]]><html><body/>')
+		do: [:each |
+			document := XMLHTMLParser parse: each.
+			self
+				assert: document nodes size = 1;
+				assert: (document firstNode isElementNamed: 'html')].
 ]
 
 { #category : #tests }
@@ -402,7 +410,7 @@ XMLHTMLParserTest >> testXMLDeclaration [
 	document := XMLHTMLParser parse: '<?xml ?>'.
 	self
 		assert: document version = 1.0;
-		assert: document encoding = 'UTF-8';
+		assert: document encoding isEmpty;
 		deny: document isStandalone.
 
 	document := XMLHTMLParser parse: '<?xml version="onePointZero" encoding="utf-8" standalone="yes"?>'.
