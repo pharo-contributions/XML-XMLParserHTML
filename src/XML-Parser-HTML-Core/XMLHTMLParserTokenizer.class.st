@@ -2401,7 +2401,7 @@ XMLHTMLParserTokenizer >> checkForCharsetInMetaAttributes: anAttributeDictionary
 	anAttributeDictionary
 		at: 'content'
 		ifPresent: [:content |
-			((content copyAfter: $=) reject: [:each | each isSeparator])
+			((content copyAfter: $=) reject: [:each | each xmlParserIsSeparator])
 				ifNotEmpty: [:charset |
 					streamReader convertFromEncoding: charset]].
 ]
@@ -2425,14 +2425,13 @@ XMLHTMLParserTokenizer >> expectNextAll: aString [
 ]
 
 { #category : #'tokenizing - expecting' }
-XMLHTMLParserTokenizer >> expectTerminator [
-	streamReader skipTo: $>
+XMLHTMLParserTokenizer >> expectSeparators [
+	streamReader skipSeparators
 ]
 
 { #category : #'tokenizing - expecting' }
-XMLHTMLParserTokenizer >> expectTerminator: aCharacter [
-	"kept for compatibility with older versions"
-	streamReader skipTo: aCharacter
+XMLHTMLParserTokenizer >> expectTerminator [
+	streamReader skipTo: $>
 ]
 
 { #category : #'tokenizing - expecting' }
@@ -2516,13 +2515,13 @@ XMLHTMLParserTokenizer >> nextComment [
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextContentMarkupToken [
-	(streamReader atEnd not
-		and: [streamReader peek isSeparator])
+	"nil understands xmlParserIsSeparator so no nil test is needed"
+	streamReader peek xmlParserIsSeparator
 		ifTrue: [
 			streamReader pushBack: '&lt;'.
 			^ self nextPCDataToken].
 	streamReader peek == $?
-		ifTrue: [^ self nextPIOrXMLDeclaration].
+		ifTrue: [^ self nextPI].
 	streamReader peek == $!
 		ifTrue: [
 			streamReader next.
@@ -2530,6 +2529,20 @@ XMLHTMLParserTokenizer >> nextContentMarkupToken [
 				ifTrue: [^self nextComment].
 			^ self nextCDataSection].
 	self nextTag.
+]
+
+{ #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextDoctypeDeclarationOrComment [
+	"skip !"
+	streamReader next.
+	streamReader peek == $-
+		ifTrue: [
+			context isXMLDeclarationContext
+				ifTrue: [context := context prologContext].
+			^ self nextComment].
+	context isPostDoctypeDeclarationContext
+		ifTrue: [^ self skipDeclaration].
+	self nextDoctypeDeclaration.
 ]
 
 { #category : #tokenizing }
@@ -2565,7 +2578,7 @@ XMLHTMLParserTokenizer >> nextName [
 	nameStream reset.
 	 [(nextChar := streamReader peek) == nil
 		or: [(HTMLNameDelimiters includes: nextChar)
-			or: [(context isDoctypeContext and: [nextChar == $[])
+			or: [(context isDoctypeDeclarationContext and: [nextChar == $[])
 				or: [context isInternalSubsetContext and: [nextChar == $]]]]]]
 		whileFalse: [nameStream nextPut: streamReader next].
 	^ nameStream contents.
@@ -2633,8 +2646,8 @@ XMLHTMLParserTokenizer >> nextPCDataToken [
 		whileFalse: [
 			streamReader next == $&
 				ifTrue: [
-					(streamReader atEnd not
-						and: [streamReader peek isSeparator])
+					"nil understands xmlParserIsSeparator so no nil test is needed"
+					streamReader peek xmlParserIsSeparator
 						ifTrue: [
 							writeStream nextPut: $&.
 							isIgnorableWhitespace := false]
@@ -2645,7 +2658,7 @@ XMLHTMLParserTokenizer >> nextPCDataToken [
 								ifTrue: [isIgnorableWhitespace := false]]]
 				ifFalse: [
 					isIgnorableWhitespace
-						ifTrue: [isIgnorableWhitespace := nextChar isSeparator].
+						ifTrue: [isIgnorableWhitespace := nextChar xmlParserIsSeparator].
 					writeStream nextPut: nextChar]].
 	isIgnorableWhitespace
 		ifTrue: [
@@ -2669,32 +2682,30 @@ XMLHTMLParserTokenizer >> nextParameterEntityReference [
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextPrologToken [
 	streamReader skipSeparators.
+	streamReader atEnd
+		ifTrue: [^ self].
 	streamReader peek == $<
+		ifFalse: [
+			^ self
+				nextStartContent;
+				nextContentToken].
+	streamReader next.
+	streamReader peek == $?
+		ifTrue: [^ self nextPIOrXMLDeclaration].
+	streamReader peek == $!
+		ifTrue: [^ self nextDoctypeDeclarationOrComment].
+
+	self nextStartContent.
+	"nil understands xmlParserIsSeparator so no nil test is needed"
+	streamReader peek xmlParserIsSeparator
 		ifTrue: [
-			streamReader next.
-			streamReader peek == $?
-				ifTrue: [^ self nextPIOrXMLDeclaration].
-			streamReader peek == $!
-				ifTrue: [
-					streamReader next.
-					streamReader peek == $-
-						ifTrue: [^ self nextComment].
-				^ self nextDoctypeDeclaration].
-
-			self nextStartContent.
-			^ (streamReader atEnd not and: [streamReader peek isSeparator])
-				ifTrue: [
-					streamReader pushBackCharacter: $<.
-					self nextContentToken]
-				ifFalse: [self nextTag]].
-
-	self
-		nextStartContent;
-		nextContentToken.
+			streamReader pushBackCharacter: $<.
+			^ self nextContentToken].
+	self nextTag.
 ]
 
 { #category : #'tokenizing - dtd' }
-XMLHTMLParserTokenizer >> nextPubidLiteral [
+XMLHTMLParserTokenizer >> nextPublicIDLiteral [
 	^ self nextQuotedValue
 ]
 
@@ -2739,7 +2750,7 @@ XMLHTMLParserTokenizer >> nextSubsetMarkupToken [
 ]
 
 { #category : #'tokenizing - dtd' }
-XMLHTMLParserTokenizer >> nextSystemLiteralRequired: aBoolean [
+XMLHTMLParserTokenizer >> nextSystemIDLiteral [
 	^ self nextQuotedValue
 ]
 
