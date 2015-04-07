@@ -173,7 +173,12 @@ XMLHTMLParserTest >> testIsInContent [
 
 { #category : #tests }
 XMLHTMLParserTest >> testParseHTML [
-	self assert: 'test' parseHTML printString = '<html><body>test</body></html>'
+	| html |
+
+	html := '<html><body>test</body></html>'.
+	self
+		assert: html parseHTML printString = html;
+		assert: html readStream parseHTML printString = html.
 ]
 
 { #category : #tests }
