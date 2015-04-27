@@ -2334,7 +2334,7 @@ XMLHTMLParserTokenizer class >> initializeHTMLEntities [
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initializeHTMLNameDelimiters [
 	(HTMLNameDelimiters := BitmapCharacterSet new)
-		addAll: Character separators;
+		addAll: Character xmlParserSeparators;
 		add: $>;
 		add: $/;
 		add: $<;
@@ -2346,7 +2346,7 @@ XMLHTMLParserTokenizer class >> initializeHTMLNameDelimiters [
 
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initializeNonHTMLCodeSectionTags [
-	NonHTMLCodeSectionTags := #('script' 'style') asSet
+	NonHTMLCodeSectionTags := #('script' 'style')
 ]
 
 { #category : #'class initialization' }
@@ -2543,6 +2543,10 @@ XMLHTMLParserTokenizer >> nextDoctypeDeclarationOrComment [
 	context isPostDoctypeDeclarationContext
 		ifTrue: [^ self skipDeclaration].
 	self nextDoctypeDeclaration.
+]
+
+{ #category : #'tokenizing - dtd' }
+XMLHTMLParserTokenizer >> nextEndIncludeSection [
 ]
 
 { #category : #tokenizing }
