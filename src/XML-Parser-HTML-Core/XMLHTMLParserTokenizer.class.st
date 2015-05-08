@@ -2392,18 +2392,15 @@ XMLHTMLParserTokenizer >> atNonHTMLSectionEndTag [
 XMLHTMLParserTokenizer >> checkForCharsetInMetaAttributes: anAttributeDictionary [
 	anAttributeDictionary
 		at: 'charset'
-		ifPresent: [:charset |
-			streamReader convertFromEncoding: charset.
-			^ self].
+		ifPresent: [:charset | ^ self convertFromEncoding: charset].
 
 	(anAttributeDictionary at: 'http-equiv') = 'Content-Type'
-		ifFalse: [^ self].
-	anAttributeDictionary
-		at: 'content'
-		ifPresent: [:content |
-			((content copyAfter: $=) reject: [:each | each xmlParserIsSeparator])
-				ifNotEmpty: [:charset |
-					streamReader convertFromEncoding: charset]].
+		ifTrue: [
+			anAttributeDictionary
+				at: 'content'
+				ifPresent: [:content |
+					((content copyAfter: $=) reject: [:each | each xmlParserIsSeparator])
+						ifNotEmpty: [:charset | self convertFromEncoding: charset]]].
 ]
 
 { #category : #'tokenizing - expecting' }
