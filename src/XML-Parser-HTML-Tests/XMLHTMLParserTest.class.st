@@ -122,8 +122,8 @@ XMLHTMLParserTest >> testInnerXML [
 	self assert: addressBook nodes second innerXML = '<second>second</second>'.
 	addressBook nodes third innerXML: '<!--third-->'.
 	self assert: addressBook nodes third innerXML = ''.
-	addressBook lastNode innerXML: '<![CDATA[ignored]]>'.
-	self assert: addressBook lastNode innerXML = ''.
+	addressBook lastNode innerXML: '<![CDATA[not ignored]]>'.
+	self assert: addressBook lastNode innerXML = 'not ignored'.
 	self
 		assert: addressBook nodes size = 4;
 		assert: (addressBook nodes allSatisfy: [:each | each isElementNamed: 'person']).
@@ -196,18 +196,12 @@ XMLHTMLParserTest >> testParsingAttributes [
 
 { #category : #tests }
 XMLHTMLParserTest >> testParsingCDATA [
-	| document |
-
-	document := XMLHTMLParser parse: '<body><![CDATA[ignored]]></body>'.
-	self deny: (document findElementNamed: 'body') hasChildren.
-
-	#('<![CDATA[ignored]]><html><body/>'
-		'<!DOCTYPE><![CDATA[ignored]]><html><body/>')
-		do: [:each |
+	#(
+		'<body><![CDATA[not ignored]]></body>'
+		'<!DOCTYPE><![CDATA[not ignored]]><html><body/>')
+		do: [:each | | document |
 			document := XMLHTMLParser parse: each.
-			self
-				assert: document nodes size = 1;
-				assert: (document firstNode isElementNamed: 'html')].
+			self assert: document contentString = 'not ignored'].
 ]
 
 { #category : #tests }
