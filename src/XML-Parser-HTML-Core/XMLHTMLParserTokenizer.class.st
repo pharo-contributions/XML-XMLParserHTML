@@ -2529,14 +2529,21 @@ XMLHTMLParserTokenizer >> nextContentMarkupToken [
 ]
 
 { #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextDoctypeDeclarationOrComment [
+XMLHTMLParserTokenizer >> nextDoctypeDeclarationOrCommentOrCDataSection [
+	| nextChar |
 	"skip !"
 	streamReader next.
-	streamReader peek == $-
+
+	(nextChar := streamReader peek) == $-
 		ifTrue: [
 			context isXMLDeclarationContext
 				ifTrue: [context := context prologContext].
 			^ self nextComment].
+	nextChar == $[
+		ifTrue: [
+			^ self
+				nextStartContent;
+				nextCDataSection].
 	context isPostDoctypeDeclarationContext
 		ifTrue: [^ self skipDeclaration].
 	self nextDoctypeDeclaration.
@@ -2694,7 +2701,7 @@ XMLHTMLParserTokenizer >> nextPrologToken [
 	streamReader peek == $?
 		ifTrue: [^ self nextPIOrXMLDeclaration].
 	streamReader peek == $!
-		ifTrue: [^ self nextDoctypeDeclarationOrComment].
+		ifTrue: [^ self nextDoctypeDeclarationOrCommentOrCDataSection].
 
 	self nextStartContent.
 	"nil understands xmlParserIsSeparator so no nil test is needed"

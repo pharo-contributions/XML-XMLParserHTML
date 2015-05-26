@@ -28,6 +28,7 @@ SAXHTMLParserDriver >> endElement: anElementName [
 
 { #category : #handling }
 SAXHTMLParserDriver >> handleCData: aString [
+	self handlePCData: aString
 ]
 
 { #category : #'handling - dtd' }
