@@ -29,29 +29,6 @@ XMLHTMLParser >> pushInnerXMLRootNode: aRootNode [
 	super pushInnerXMLRootNode: aRootNode.
 ]
 
-{ #category : #content }
-XMLHTMLParser >> startElement: aQualifiedName prefix: aPrefix uri: aURI localName: aLocalName attributes: aDictionary [
-	| uniqueElement |
-
-	aQualifiedName = 'html'
-		ifTrue: [uniqueElement := self uniqueHtmlElement]
-		ifFalse: [
-			aQualifiedName = 'head'
-				ifTrue: [uniqueElement := self uniqueHeadElement]
-				ifFalse: [
-					aQualifiedName = 'body'
-						ifTrue: [uniqueElement := self uniqueBodyElement]]].
-	uniqueElement
-		ifNotNil: [^ self pushNode: uniqueElement].
-
-	super
-		startElement: aQualifiedName
-		prefix: aPrefix
-		uri: aURI
-		localName: aLocalName
-		attributes: aDictionary.
-]
-
 { #category : #private }
 XMLHTMLParser >> startInnerXMLElement: anElement forParser: aParser [
 	| elementNester |
@@ -61,29 +38,4 @@ XMLHTMLParser >> startInnerXMLElement: anElement forParser: aParser [
 		elementsToEndDo: [:each | ]
 		elementsToStartDo: [:each | elementNester startElement: each];
 		startElement: anElement name
-]
-
-{ #category : #private }
-XMLHTMLParser >> uniqueBodyElement [
-	(self document notNil
-		and: [self document root notNil])
-		ifTrue: [^ self document root elementAt: 'body'].
-	^ nil.
-]
-
-{ #category : #private }
-XMLHTMLParser >> uniqueHeadElement [
-	(self document notNil
-		and: [self document root notNil])
-		ifTrue: [^ self document root elementAt: 'head'].
-	^ nil.
-]
-
-{ #category : #private }
-XMLHTMLParser >> uniqueHtmlElement [
-	(self document notNil
-		and: [self document root notNil
-			and: [self document root isNamed: 'html']])
-		ifTrue: [^ self document root].
-	^ nil.
 ]

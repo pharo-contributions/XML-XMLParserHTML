@@ -5,11 +5,13 @@ Class {
 	#name : #XMLHTMLElementNester,
 	#superclass : #XMLElementNester,
 	#instVars : [
-		'openElementsByName'
+		'openElementsByName',
+		'startedHTMLSection',
+		'startedHeadSection',
+		'startedBodySection'
 	],
 	#classVars : [
 		'HTMLTagInformation',
-		'UniqueElements',
 		'VoidElements'
 	],
 	#category : #'XML-Parser-HTML-Core'
@@ -46,7 +48,6 @@ XMLHTMLElementNester class >> initialize [
 	"self initialize"
 
 	self
-		initializeUniqueElements;
 		initializeVoidElements;
 		initializeHTMLTagInformation
 ]
@@ -54,6 +55,8 @@ XMLHTMLElementNester class >> initialize [
 { #category : #'class initialization' }
 XMLHTMLElementNester class >> initializeHTMLTagInformation [
 	HTMLTagInformation := Dictionary new.
+
+	#('html' 'head' 'body') do: [:each | self htmlTagInfoFor: each].
 
 	self bodySectionElements do: [:each |
 		(self htmlTagInfoFor: each) isBodySectionTag: true].
@@ -67,14 +70,8 @@ XMLHTMLElementNester class >> initializeHTMLTagInformation [
 
 	self nonNestableElements do: [:each |
 		(self htmlTagInfoFor: each) isNonNestable: true].
-	self uniqueElements do: [:each | self htmlTagInfoFor: each].
 	self voidElements do: [:each |
 		(self htmlTagInfoFor: each) isSelfClosing: true].
-]
-
-{ #category : #'class initialization' }
-XMLHTMLElementNester class >> initializeUniqueElements [
-	UniqueElements := self uniqueElements
 ]
 
 { #category : #'class initialization' }
@@ -132,33 +129,32 @@ XMLHTMLElementNester class >> voidElements [
 ]
 
 { #category : #checking }
-XMLHTMLElementNester >> beforeEnding: anElementName elementsToEndDo: aBlock [
+XMLHTMLElementNester >> beforeEnding: anElementName elementsToEndDo: anElementEndingBlock [
 	self openElementsReverseDo: [:each |
 		each = anElementName
 			ifTrue: [^ self].
-		aBlock value: each].
+		anElementEndingBlock value: each].
 ]
 
 { #category : #checking }
-XMLHTMLElementNester >> beforePCDataElementsToEndDo: aFirstBlock elementsToStartDo: aSecondBlock [
-	(self hasOpenElement: 'head')
+XMLHTMLElementNester >> beforePCDataElementsToEndDo: anElementEndingBlock elementsToStartDo: anElementStartingBlock [
+	(self startedHeadSection
+		and: [self startedBodySection not])
 		ifTrue: [
 			self
-				beforeEnding: 'head'
-				elementsToEndDo: aFirstBlock.
-			aFirstBlock value: 'head'].
-
-	self hasOpenElements
-		ifFalse: [aSecondBlock value: 'html'].
-	(self hasOpenElement: 'body')
-		ifFalse: [aSecondBlock value: 'body'].
+				beforeEnding: 'html'
+				elementsToEndDo: anElementEndingBlock].
+	self startedHTMLSection
+		ifFalse: [anElementStartingBlock value: 'html'].
+	self startedBodySection
+		ifFalse: [anElementStartingBlock value: 'body'].
 ]
 
 { #category : #checking }
-XMLHTMLElementNester >> beforeStarting: anElementName elementsToEndDo: aFirstBlock elementsToStartDo: aSecondBlock [
-	| htmlTag |
+XMLHTMLElementNester >> beforeStarting: anElementName elementsToEndDo: anElementEndingBlock elementsToStartDo: anElementStartingBlock [
+	| htmlTagInfo |
 
-	htmlTag :=
+	htmlTagInfo :=
 		HTMLTagInformation
 			at: anElementName
 			ifAbsent: [XMLHTMLTagInformation named: anElementName].
@@ -166,75 +162,70 @@ XMLHTMLElementNester >> beforeStarting: anElementName elementsToEndDo: aFirstBlo
 	self hasOpenElements
 		ifTrue: [
 			self
-				elementsToEndBeforeStartTag: htmlTag
-				do: aFirstBlock].
+				elementsToEndBeforeStartTag: htmlTagInfo
+				do: anElementEndingBlock].
 	self
-		elementsToStartBeforeStartTag: htmlTag
-		do: aSecondBlock.
+		elementsToStartBeforeStartTag: htmlTagInfo
+		do: anElementStartingBlock.
 ]
 
 { #category : #private }
-XMLHTMLElementNester >> cannotSelfNestTag: anHtmlTagInfo [
+XMLHTMLElementNester >> cannotSelfNestTag: anHTMLTagInfo [
 	| tagGroup |
 
-	(anHtmlTagInfo isNonNestable)
+	(anHTMLTagInfo isNonNestable)
 		ifFalse: [^ false].
 		
 	"tags like <td> can nest in each other if there is a <table> between
 	them like <td><table><tr><td>...."
-	((tagGroup := anHtmlTagInfo nestableTagGroup)
+	((tagGroup := anHTMLTagInfo nestableTagGroup)
 		anySatisfy: [:each | self hasOpenElement: each])
 		ifFalse: [^ true].
 
 	self openElementsReverseDo: [:each |
-		each = anHtmlTagInfo name
+		each = anHTMLTagInfo name
 			ifTrue: [^ true].
 		(tagGroup includes: each)
 			ifTrue: [^ false]].
 ]
 
 { #category : #private }
-XMLHTMLElementNester >> currentSectionCannotContainTag: anHtmlTagInfo [
-	^(anHtmlTagInfo isBodySectionOnlyTag
-		and: [self hasOpenElement: 'head'])
-			or: [anHtmlTagInfo isHeadSectionOnlyTag
-				and: [self hasOpenElement: 'body']]
-]
-
-{ #category : #private }
-XMLHTMLElementNester >> elementsToEndBeforeStartTag: anHtmlTagInfo do: aBlock [
+XMLHTMLElementNester >> elementsToEndBeforeStartTag: anHTMLTagInfo do: anElementEndingBlock [
 	| excludingTag |
 
-	(anHtmlTagInfo isHeadOrBodyTag
-		or: [self currentSectionCannotContainTag: anHtmlTagInfo])
-		ifTrue: [^ self beforeEnding: 'html' elementsToEndDo: aBlock].
+	(self mustEndHeadSectionForTag: anHTMLTagInfo)
+		ifTrue: [
+			^ self
+				beforeEnding: 'html'
+				elementsToEndDo: anElementEndingBlock].
 
-	(((self hasOpenElement: anHtmlTagInfo name)
-		and: [self cannotSelfNestTag: anHtmlTagInfo])
-		or: [(excludingTag := anHtmlTagInfo mutuallyExcludingTag) notNil
+	(((self hasOpenElement: anHTMLTagInfo name)
+		and: [self cannotSelfNestTag: anHTMLTagInfo])
+		or: [(excludingTag := anHTMLTagInfo mutuallyExcludingTag) notNil
 			and: [self hasOpenElement: excludingTag]])
 		ifTrue: [
 			self openElementsReverseDo: [:each |
-				aBlock value: each.
-				((each = anHtmlTagInfo name)
+				anElementEndingBlock value: each.
+				((each = anHTMLTagInfo name)
 					or: [each = excludingTag])
 					ifTrue: [^ self]]].
 ]
 
 { #category : #private }
-XMLHTMLElementNester >> elementsToStartBeforeStartTag: anHtmlTagInfo do: aBlock [
-	(anHtmlTagInfo name = 'html')
+XMLHTMLElementNester >> elementsToStartBeforeStartTag: anHTMLTagInfo do: anElementStartingBlock [
+	anHTMLTagInfo isHTMLTag
 		ifTrue: [^ self].
-	self hasOpenElements
-		ifFalse: [aBlock value: 'html'].
-	anHtmlTagInfo isHeadOrBodyTag
+	self startedHTMLSection
+		ifFalse: [anElementStartingBlock value: 'html'].
+	(anHTMLTagInfo isHeadTag
+		or: [anHTMLTagInfo isBodyTag])
 		ifTrue: [^ self]. 
 
-	(self mustStartHeadSectionForTag: anHtmlTagInfo)
-		ifTrue: [aBlock value: 'head']
+	(self mustStartHeadSectionForTag: anHTMLTagInfo)
+		ifTrue: [anElementStartingBlock value: 'head']
 		ifFalse: [
-			(self mustStartBodySectionForTag: anHtmlTagInfo)
-				ifTrue: [aBlock value: 'body']].
+			(self mustStartBodySectionForTag: anHTMLTagInfo)
+				ifTrue: [anElementStartingBlock value: 'body']].
 ]
 
 { #category : #checking }
@@ -252,7 +243,9 @@ XMLHTMLElementNester >> endElement: anElementName [
 
 { #category : #testing }
 XMLHTMLElementNester >> hasOpenElement: anElementName [
-	^ (self openElementsByName at: anElementName ifAbsent: [0]) > 0
+	^ (self openElementsByName
+		at: anElementName
+		ifAbsent: [0]) > 0
 ]
 
 { #category : #initialization }
@@ -260,30 +253,57 @@ XMLHTMLElementNester >> initialize [
 	super initialize.
 
 	openElementsByName := Dictionary new.
+	startedHTMLSection := false.
+	startedHeadSection := false.
+	startedBodySection := false.
 ]
 
 { #category : #testing }
-XMLHTMLElementNester >> isOpenUniqueElement: anElementName [
-	^ (UniqueElements includes: anElementName)
-		and: [self hasOpenElement: anElementName]
+XMLHTMLElementNester >> isRedundantEndTag: anElementName [
+	^ anElementName = 'html' "these tags should remain open until the end"
+		or: [anElementName = 'body'
+			or: [self isVoidElement: anElementName]]
+]
+
+{ #category : #testing }
+XMLHTMLElementNester >> isRedundantStartTag: anElementName [
+	anElementName = 'html'
+		ifTrue: [^ self startedHTMLSection].
+	anElementName = 'head'
+		ifTrue: [^ self startedHeadSection].
+	anElementName = 'body'
+		ifTrue: [^ self startedBodySection].
+	^ false.
 ]
 
 { #category : #testing }
 XMLHTMLElementNester >> isVoidElement: anElementName [
-	^ (HTMLTagInformation at: anElementName ifAbsent: [^ false]) isSelfClosing
+	^ (HTMLTagInformation
+		at: anElementName
+		ifAbsent: [^ false]) isSelfClosing
 ]
 
 { #category : #private }
-XMLHTMLElementNester >> mustStartBodySectionForTag: anHtmlTagInfo [
-	^ (anHtmlTagInfo isBodySectionOnlyTag
-		or: [(self hasOpenElement: 'head') not])
-			and: [(self hasOpenElement: 'body') not]
+XMLHTMLElementNester >> mustEndHeadSectionForTag: anHTMLTagInfo [
+	^ self startedBodySection not
+		and: [self startedHeadSection
+			and: [anHTMLTagInfo isBodyTag
+				or: [anHTMLTagInfo isBodySectionOnlyTag]]]
 ]
 
 { #category : #private }
-XMLHTMLElementNester >> mustStartHeadSectionForTag: anHtmlTagInfo [
-	^ anHtmlTagInfo isHeadSectionOnlyTag 
-		and: [(self hasOpenElement: 'head') not]
+XMLHTMLElementNester >> mustStartBodySectionForTag: anHTMLTagInfo [
+	^ self startedBodySection not
+		and: [anHTMLTagInfo isBodySectionOnlyTag
+			or: [self startedHeadSection not
+				and: [anHTMLTagInfo isHeadSectionOnlyTag not]]]
+]
+
+{ #category : #private }
+XMLHTMLElementNester >> mustStartHeadSectionForTag: anHTMLTagInfo [
+	^ self startedBodySection not
+		and: [self startedHeadSection not
+			and: [anHTMLTagInfo isHeadSectionOnlyTag]]
 ]
 
 { #category : #private }
@@ -301,5 +321,30 @@ XMLHTMLElementNester >> startElement: anElementName [
 			ifAbsent: [self openElementsByName add: (anElementName -> 0)].
 	association value: association value + 1.
 
+	self startedHTMLSection
+		ifTrue: [
+			self startedBodySection
+				ifFalse: [
+					(self startedHeadSection not
+						and: [anElementName = 'head']) 
+						ifTrue: [startedHeadSection := true]
+						ifFalse: [startedBodySection := anElementName = 'body']]]
+		ifFalse: [startedHTMLSection := anElementName = 'html'].
+
 	super startElement: anElementName.
+]
+
+{ #category : #testing }
+XMLHTMLElementNester >> startedBodySection [
+	^ startedBodySection
+]
+
+{ #category : #testing }
+XMLHTMLElementNester >> startedHTMLSection [
+	^ startedHTMLSection
+]
+
+{ #category : #testing }
+XMLHTMLElementNester >> startedHeadSection [
+	^ startedHeadSection
 ]

@@ -46,8 +46,8 @@ SAXHTMLParserDriver >> handleEndDocument [
 ]
 
 { #category : #handling }
-SAXHTMLParserDriver >> handleEndTag: anElementName [ 
-	(self elementNester isVoidElement: anElementName)
+SAXHTMLParserDriver >> handleEndTag: anElementName [
+	(self elementNester isRedundantEndTag: anElementName)
 		ifTrue: [^ self].
 	(self elementNester hasOpenElement: anElementName)
 		ifFalse: [self startElement: anElementName].
@@ -90,7 +90,7 @@ SAXHTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicID systemID: aSyst
 
 { #category : #handling }
 SAXHTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDictionary namespaces: aNamespaceDictionary [
-	(self elementNester isOpenUniqueElement: anElementName)
+	(self elementNester isRedundantStartTag: anElementName)
 		ifTrue: [^ self].
 
 	self elementNester

@@ -6,6 +6,9 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'name',
+		'isHTMLTag',
+		'isHeadTag',
+		'isBodyTag',
 		'isBodySectionTag',
 		'isHeadSectionTag',
 		'isNonNestable',
@@ -25,6 +28,9 @@ XMLHTMLTagInformation class >> named: aName [
 XMLHTMLTagInformation >> initialize [
 	super initialize.
 
+	isHTMLTag := false.
+	isHeadTag := false.
+	isBodyTag := false.
 	isBodySectionTag := false.
 	isHeadSectionTag := false.
 	isNonNestable := false.
@@ -48,8 +54,13 @@ XMLHTMLTagInformation >> isBodySectionTag: aBoolean [
 ]
 
 { #category : #testing }
-XMLHTMLTagInformation >> isHeadOrBodyTag [
-	^ name = 'body' or: [name = 'head']
+XMLHTMLTagInformation >> isBodyTag [
+	^ isBodyTag
+]
+
+{ #category : #testing }
+XMLHTMLTagInformation >> isHTMLTag [
+	^ isHTMLTag
 ]
 
 { #category : #testing }
@@ -65,6 +76,11 @@ XMLHTMLTagInformation >> isHeadSectionTag [
 { #category : #accessing }
 XMLHTMLTagInformation >> isHeadSectionTag: aBoolean [
 	isHeadSectionTag := aBoolean
+]
+
+{ #category : #testing }
+XMLHTMLTagInformation >> isHeadTag [
+	^ isHeadTag
 ]
 
 { #category : #testing }
@@ -104,7 +120,10 @@ XMLHTMLTagInformation >> name [
 
 { #category : #accessing }
 XMLHTMLTagInformation >> name: aName [
-	name := aName
+	name := aName.
+	isHTMLTag := name = 'html'.
+	isHeadTag := name = 'head'.
+	isBodyTag := name = 'body'.
 ]
 
 { #category : #accessing }
