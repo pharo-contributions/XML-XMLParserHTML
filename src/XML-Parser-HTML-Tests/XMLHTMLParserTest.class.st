@@ -334,12 +334,43 @@ XMLHTMLParserTest >> testParsingTables [
 { #category : #tests }
 XMLHTMLParserTest >> testParsingText [
 	| document |
-	
-	document := XMLHTMLParser parse: 'text'.
-	self
-		assert: document allNodes size = 4;
-		assert: (document allElementsCollect: [:each | each name]) asArray = #('html' 'body');
-		assert: (document findElementNamed: 'body') contentString = 'text'.
+
+	#('text' '<html>text' '<body>text') do: [:source |
+		document := XMLHTMLParser parse: source.
+		self
+			assert: document nodes size = 1;
+			assert: (document root isElementNamed: 'html');
+			assert: document root nodes size = 1;
+			assert: (document root firstNode isElementNamed: 'body');
+			assert: (document root firstNode contentString = 'text')].
+
+	#('<head>text' '<html><head>text') do: [:source |
+		document := XMLHTMLParser parse: '<head>text'.
+		self
+			assert: document nodes size = 1;
+			assert: (document root isElementNamed: 'html');
+			assert: document root nodes size = 2;
+			assert: (document root firstNode isElementNamed: 'head');
+			assert: (document root nodes second isElementNamed: 'body');
+			assert: (document root nodes second contentString = 'text')].
+]
+
+{ #category : #tests }
+XMLHTMLParserTest >> testParsingUnclosedHeadSection [
+	#('<head><p>text<Title>title' '<head><body><p>text<Title>title') do: [:each | | document p |
+		document := XMLHTMLParser parse: each.
+		self
+			assert: (document root isElementNamed: 'html');
+			assert: document root nodes size = 2;
+			deny: (document findElementNamed: 'head') hasChildren;
+			assert: (document findElementNamed: 'body') nodes size = 1.
+		p := (document findElementNamed: 'body') firstElement.
+		self
+			assert: (p isNamed: 'p');
+			assert: p nodes size = 2;
+			assert: (p firstNode isStringNode: 'text');
+			assert: (p nodes second isElementNamed: 'title');
+			assert: p nodes second contentString = 'title']
 ]
 
 { #category : #tests }
@@ -375,31 +406,24 @@ XMLHTMLParserTest >> testProcessingInstructions [
 
 { #category : #tests }
 XMLHTMLParserTest >> testReopeningHTML [
-	| document |
+	| document html body |
 
-	document := XMLHTMLParser parse: '<html><B></body></html><I>'.
+	document := XMLHTMLParser parse: '<html><B></body></html><I>test'.
+	html := document root.
 	self
-		assert: (document allElementsCollect: [:each | each name]) asArray = #('html' 'body' 'b' 'i');
-		assert: document root nodes size = 1;
-		assert: (document root firstElement elementsCollect: [:each | each name]) asArray = #('b' 'i').
-
-	document := XMLHTMLParser parse: '<html><B>bold</body></html>normal'.
+		assert: (html isElementNamed: 'html');
+		assert: html nodes size = 1.
+	body := html firstNode.
 	self
-		assert: (document allElementsCollect: [:each | each name]) asArray = #('html' 'body' 'b');
-		assert: (document findElementNamed: 'body') contentString = 'bold normal'.
-]
+		assert: (body isElementNamed: 'body');
+		assert: body nodes size = 1;
+		assert: (body firstNode isElementNamed: 'b');
+		assert: body firstNode nodes size = 1;
+		assert: (body firstNode firstNode isElementNamed: 'i');
+		assert: body firstNode firstNode contentString = 'test'.
 
-{ #category : #tests }
-XMLHTMLParserTest >> testReopeningHeadSection [
-	| document |
-
-	document := XMLHTMLParser parse: '<head><p>text<Title>reopened'.
-	self
-		assert: (document root elementsCollect: [:each | each name]) asArray = #('head' 'body');
-		assert: (document findElementNamed: 'head') elements size = 1;
-		assert: ((document findElementNamed: 'head') elementAt: 'title') contentString = 'reopened';
-		assert: (document findElementNamed: 'body') elements size = 1;
-		assert: ((document findElementNamed: 'body') elementAt: 'p') contentString = 'text'.
+	document := XMLHTMLParser parse: '<html><B>bold</body></html>bold'.
+	self assert: (document findElementNamed: 'b') contentString = 'boldbold'.
 ]
 
 { #category : #tests }
