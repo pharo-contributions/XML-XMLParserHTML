@@ -12,7 +12,6 @@ Class {
 		'isBodySectionTag',
 		'isHeadSectionTag',
 		'isNonNestable',
-		'isSelfClosing',
 		'mutuallyExcludingTag',
 		'nestableTagGroup'
 	],
@@ -34,7 +33,6 @@ XMLHTMLTagInformation >> initialize [
 	isBodySectionTag := false.
 	isHeadSectionTag := false.
 	isNonNestable := false.
-	isSelfClosing := false.
 	nestableTagGroup := #().
 ]
 
@@ -91,16 +89,6 @@ XMLHTMLTagInformation >> isNonNestable [
 { #category : #accessing }
 XMLHTMLTagInformation >> isNonNestable: aBoolean [
 	isNonNestable := aBoolean
-]
-
-{ #category : #testing }
-XMLHTMLTagInformation >> isSelfClosing [
-	^ isSelfClosing
-]
-
-{ #category : #accessing }
-XMLHTMLTagInformation >> isSelfClosing: aBoolean [
-	isSelfClosing := aBoolean
 ]
 
 { #category : #accessing }

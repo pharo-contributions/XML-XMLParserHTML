@@ -12,6 +12,7 @@ Class {
 	],
 	#classVars : [
 		'HTMLTagInformation',
+		'RedundantEndTags',
 		'VoidElements'
 	],
 	#category : #'XML-Parser-HTML-Core'
@@ -48,8 +49,9 @@ XMLHTMLElementNester class >> initialize [
 	"self initialize"
 
 	self
+		initializeHTMLTagInformation;
 		initializeVoidElements;
-		initializeHTMLTagInformation.
+		initializeRedundantEndTags
 ]
 
 { #category : #'class initialization' }
@@ -70,8 +72,14 @@ XMLHTMLElementNester class >> initializeHTMLTagInformation [
 
 	self nonNestableElements do: [:each |
 		(self htmlTagInfoFor: each) isNonNestable: true].
-	self voidElements do: [:each |
-		(self htmlTagInfoFor: each) isSelfClosing: true].
+]
+
+{ #category : #'class initialization' }
+XMLHTMLElementNester class >> initializeRedundantEndTags [
+	RedundantEndTags := self voidElements asSet.
+
+	"html/body are redundant end tags because they should remain open until the end"
+	RedundantEndTags addAll: #('html' 'body').
 ]
 
 { #category : #'class initialization' }
@@ -115,11 +123,6 @@ XMLHTMLElementNester class >> nonNestableElements [
 	^ #('a' 'applet' 'audio' 'button' 'footer' 'form' 'header' 'label' 'map'
 		'meter' 'optgroup' 'option' 'ruby' 'select' 'video'),
 		self nestableTagGroups keys asArray
-]
-
-{ #category : #private }
-XMLHTMLElementNester class >> uniqueElements [
-	^ #('html' 'head' 'body')
 ]
 
 { #category : #private }
@@ -260,9 +263,7 @@ XMLHTMLElementNester >> initialize [
 
 { #category : #testing }
 XMLHTMLElementNester >> isRedundantEndTag: anElementName [
-	^ anElementName = 'html' "these tags should remain open until the end"
-		or: [anElementName = 'body'
-			or: [self isVoidElement: anElementName]]
+	^ RedundantEndTags includes: anElementName
 ]
 
 { #category : #testing }
@@ -278,9 +279,7 @@ XMLHTMLElementNester >> isRedundantStartTag: anElementName [
 
 { #category : #testing }
 XMLHTMLElementNester >> isVoidElement: anElementName [
-	^ (HTMLTagInformation
-		at: anElementName
-		ifAbsent: [^ false]) isSelfClosing
+	^ VoidElements includes: anElementName
 ]
 
 { #category : #private }
