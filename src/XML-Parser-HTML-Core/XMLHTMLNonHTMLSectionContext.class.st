@@ -1,5 +1,5 @@
 "
-A context for elements containing non-markup.
+A context for elements containing non-markup content.
 "
 Class {
 	#name : #XMLHTMLNonHTMLSectionContext,

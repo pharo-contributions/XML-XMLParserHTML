@@ -1,5 +1,5 @@
 "
-This is the driver for the HTMLHandler. It uses the HTMLElementNester to make bad HTML nest correctly.
+This is the driver for SAXHTMLHandler. It uses XMLHTMLElementNester to make bad HTML nest correctly.
 "
 Class {
 	#name : #SAXHTMLParserDriver,

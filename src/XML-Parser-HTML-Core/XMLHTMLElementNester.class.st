@@ -49,7 +49,7 @@ XMLHTMLElementNester class >> initialize [
 
 	self
 		initializeVoidElements;
-		initializeHTMLTagInformation
+		initializeHTMLTagInformation.
 ]
 
 { #category : #'class initialization' }
@@ -124,8 +124,8 @@ XMLHTMLElementNester class >> uniqueElements [
 
 { #category : #private }
 XMLHTMLElementNester class >> voidElements [
-	^ #('area' 'base' 'br' 'col' 'command' 'embed' 'hr' 'img' 'input' 'keygen'
-		'link' 'menuitem' 'meta' 'param' 'source' 'track' 'wbr')
+	^ #('area' 'base' 'br' 'col' 'command' 'embed' 'frame' 'hr' 'img' 'input'
+		'keygen' 'link' 'menuitem' 'meta' 'param' 'source' 'track' 'wbr')
 ]
 
 { #category : #checking }

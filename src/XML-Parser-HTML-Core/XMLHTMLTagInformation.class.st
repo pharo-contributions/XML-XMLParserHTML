@@ -1,5 +1,5 @@
 "
-This class is used by the element nester to store information about specific tags and make it faster to lookup.
+This class is used by the element nester to store information about tags for faster lookup.
 "
 Class {
 	#name : #XMLHTMLTagInformation,
