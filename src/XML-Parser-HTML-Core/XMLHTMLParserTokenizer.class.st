@@ -2306,6 +2306,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initialize [
 	"self initialize"
+
 	self
 		initializeHTMLEntities;
 		initializeHTMLNameDelimiters;
@@ -2351,7 +2352,7 @@ XMLHTMLParserTokenizer class >> initializeNonHTMLCodeSectionTags [
 
 { #category : #'class initialization' }
 XMLHTMLParserTokenizer class >> initializeNonHTMLSectionTags [
-	NonHTMLSectionTags := #('script' 'style' 'title' 'textarea') asSet
+	NonHTMLSectionTags := #('script' 'style' 'title' 'textarea' 'template') asSet
 ]
 
 { #category : #accessing }
@@ -2476,29 +2477,29 @@ XMLHTMLParserTokenizer >> nextAttributeValue [
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextCharacterReferenceOnWriteStream [
-	| codePointString reader character |
+	| reader character |
 
 	"skip $#"
 	streamReader next.
-	codePointString := self nextName.
-	reader := XMLIntegerReader on: codePointString readStream.
+	nameStream reset.
+	(reader := XMLIntegerReader on: streamReader)
+		printStream: nameStream.
 	character :=
 		self characterFromCodePoint:
-			(reader 
+			(reader
 				nextIntegerWithBase: 16
 				startingWithAny: 'Xx'
 				orBase: 10).
 	(character notNil
-		and: [reader atEnd
-			and: [driver replacesContentEntityReferences]])
+		and: [driver replacesContentEntityReferences])
+		ifTrue: [
+			streamReader peek == $; "; is optional"
+				ifTrue: [streamReader next].
+			writeStream nextPut: character]
 		ifFalse: [
 			writeStream
 				nextPutAll: '&#';
-				nextPutAll: codePointString.
-			^ true].
-	streamReader peek == $; "; is optional"
-		ifTrue: [streamReader next].
-	writeStream nextPut: character.
+				nextPutAll: nameStream contents].
 	^ true.
 ]
 
