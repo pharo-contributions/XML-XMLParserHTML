@@ -35,16 +35,17 @@ XMLHTMLParserTest >> benchmark2 [
 { #category : #tests }
 XMLHTMLParserTest >> testCharacterReferences [
 	self assert:
-		(XMLHTMLParser parse: '&#60; &#x3C &#X3E &#62; &#0; &#-1 &#invalid; &#invalid &#')
-			contentString = '< < > > &#0; &#-1 &#invalid; &#invalid &#'.
+		(XMLHTMLParser parse: '&#60; &#x3c &#X3E &#62; &#62end &#x2Astar &#0; &#-1 &#inval; &#inval &#')
+			contentString = '< < > > >end *star &#0; &#-1 &#inval; &#inval &#'.
 ]
 
 { #category : #tests }
 XMLHTMLParserTest >> testCharacterReferencesUnreplaced [
 	self assert:
-		((XMLHTMLParser on: '&#60; &#x3C &#X3E &#62; &#0; &#-1 &#invalid; &#invalid &#')
+		((XMLHTMLParser on: '&#60; &#x3c &#X3E &#62; &#62end &#x2Astar &#0; &#-1 &#inval; &#inval &#')
 			replacesContentEntityReferences: false;
-			parseDocument) contentString = '&#60; &#x3C &#X3E &#62; &#0; &#-1 &#invalid; &#invalid &#'
+			parseDocument) contentString =
+				'&#60; &#x3c &#X3E &#62; &#62end &#x2Astar &#0; &#-1 &#inval; &#inval &#'
 ]
 
 { #category : #tests }
@@ -332,6 +333,23 @@ XMLHTMLParserTest >> testParsingTables [
 ]
 
 { #category : #tests }
+XMLHTMLParserTest >> testParsingTemplates [
+	| document |
+
+	document := XMLHTMLParser parse: '<template><b>test</b></template>'.
+	self
+		assert: document allElements elementNames asArray = #('html' 'head' 'template');
+		assert: (document root firstElement isNamed: 'head');
+		assert: (document root firstElement contentStringAt: 'template') = '<b>test</b>'.
+
+	document := XMLHTMLParser parse: '<body><template><p>test<p></template></body>'.
+	self
+		assert: document allElements elementNames asArray = #('html' 'body' 'template');
+		assert: (document root firstElement isNamed: 'body');
+		assert: (document root firstElement contentStringAt: 'template') = '<p>test<p>'.
+]
+
+{ #category : #tests }
 XMLHTMLParserTest >> testParsingText [
 	| document |
 
@@ -371,6 +389,19 @@ XMLHTMLParserTest >> testParsingUnclosedHeadSection [
 			assert: (p firstNode isStringNode: 'text');
 			assert: (p nodes second isElementNamed: 'title');
 			assert: p nodes second contentString = 'title']
+]
+
+{ #category : #tests }
+XMLHTMLParserTest >> testParsingUnknownTag [
+	| document |
+
+	self
+		shouldnt: [document := XMLHTMLParser parse: '<pharo>test</pharo>']
+		raise: Error.
+
+	self
+		assert: document printString = '<html><body><pharo>test</pharo></body></html>';
+		assert: document contentString = 'test'.
 ]
 
 { #category : #tests }
