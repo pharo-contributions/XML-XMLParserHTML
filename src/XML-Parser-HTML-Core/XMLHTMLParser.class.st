@@ -14,7 +14,7 @@ XMLHTMLParser >> driverClass [
 	^ SAXHTMLParserDriver
 ]
 
-{ #category : #content }
+{ #category : #'handling - content' }
 XMLHTMLParser >> endElement: aQualifiedName prefix: aPrefix uri: aURI localName: aLocalName [
 	self topNode
 		ifNotNil: [:node |

@@ -2547,10 +2547,6 @@ XMLHTMLParserTokenizer >> nextDoctypeDeclarationOrCommentOrCDataSection [
 	self nextDoctypeDeclaration.
 ]
 
-{ #category : #'tokenizing - dtd' }
-XMLHTMLParserTokenizer >> nextEndIncludeSection [
-]
-
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextEndTag [
 	"Skip /"

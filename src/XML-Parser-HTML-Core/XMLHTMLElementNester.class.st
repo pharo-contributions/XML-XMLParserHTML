@@ -174,22 +174,20 @@ XMLHTMLElementNester >> beforeStarting: anElementName elementsToEndDo: anElement
 
 { #category : #private }
 XMLHTMLElementNester >> cannotSelfNestTag: anHTMLTagInfo [
-	| tagGroup |
+	anHTMLTagInfo isNonNestable
+		ifTrue: [	| tagGroup |
+			"tags like <td> can nest in each other if there is a <table> between
+			them like <td><table><tr><td>...."
+			((tagGroup := anHTMLTagInfo nestableTagGroup)
+				anySatisfy: [:each | self hasOpenElement: each])
+				ifFalse: [^ true].
 
-	(anHTMLTagInfo isNonNestable)
-		ifFalse: [^ false].
-		
-	"tags like <td> can nest in each other if there is a <table> between
-	them like <td><table><tr><td>...."
-	((tagGroup := anHTMLTagInfo nestableTagGroup)
-		anySatisfy: [:each | self hasOpenElement: each])
-		ifFalse: [^ true].
-
-	self openElementsReverseDo: [:each |
-		each = anHTMLTagInfo name
-			ifTrue: [^ true].
-		(tagGroup includes: each)
-			ifTrue: [^ false]].
+			self openElementsReverseDo: [:each |
+				each = anHTMLTagInfo name
+					ifTrue: [^ true].
+				(tagGroup includes: each)
+					ifTrue: [^ false]]].
+	^ false.
 ]
 
 { #category : #private }
