@@ -534,7 +534,7 @@ ConfigurationOfXMLParserHTML >> version124: spec [
 
         spec for: #common do: [
                 spec blessing: #release.
-			spec package: 'XML-Parser-HTML-Core' with: 'XML-Parser-HTML-Core-monty.34'.
+			spec package: 'XML-Parser-HTML-Core' with: 'XML-Parser-HTML-Core-monty.35'.
 			spec package: 'XML-Parser-HTML-Tests' with: 'XML-Parser-HTML-Tests-monty.17'.
                 ].
 ]
