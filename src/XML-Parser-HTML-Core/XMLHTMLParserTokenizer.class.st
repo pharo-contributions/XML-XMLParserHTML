@@ -2476,6 +2476,13 @@ XMLHTMLParserTokenizer >> nextAttributeValue [
 ]
 
 { #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextCDataSection [
+	self expectNextAll: '[CDATA['.
+
+	driver handleCData: (self expectUpToAll: ']]>').
+]
+
+{ #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextCharacterReferenceOnWriteStream [
 	| reader character |
 
@@ -2687,6 +2694,11 @@ XMLHTMLParserTokenizer >> nextPCDataToken [
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextPITarget [
 	^ self nextName
+]
+
+{ #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextPIValue [
+	^ self expectUpToAll: '?>'
 ]
 
 { #category : #'tokenizing - dtd' }
