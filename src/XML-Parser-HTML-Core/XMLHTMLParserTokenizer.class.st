@@ -2364,14 +2364,8 @@ XMLHTMLParserTokenizer class >> predefinedEntities [
 XMLHTMLParserTokenizer >> atNonHTMLSectionEndTag [
 	| matches elementName |
 
-	streamReader peek == $<
+	(streamReader nextMatch: $< followedBy: $/)
 		ifFalse: [^ false].
-	streamReader next.
-	streamReader peek == $/
-		ifFalse: [
-			streamReader pushBackCharacter: $<.
-			^ false].
-	streamReader next.
 
 	elementName := context element.
 	1 to: elementName size do: [:i | | nextChar |

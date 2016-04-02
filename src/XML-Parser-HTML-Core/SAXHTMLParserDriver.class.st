@@ -18,12 +18,12 @@ SAXHTMLParserDriver >> endElement: anElementName [
 
 	self elementNester endElement: anElementName.
 
-	prefix := anElementName prefixBeforeLocalName.	
+	prefix := anElementName xmlPrefixBeforeLocalName.	
 	self saxHandler 
 		endElement: anElementName
 		prefix: prefix
 		uri: ''
-		localName: (anElementName localNameAfterPrefix: prefix)
+		localName: (anElementName xmlLocalNameAfterPrefix: prefix)
 ]
 
 { #category : #handling }
@@ -132,12 +132,12 @@ SAXHTMLParserDriver >> startElement: anElementName attributes: anAttributeDictio
 
 	self elementNester startElement: anElementName.
 
-	prefix := anElementName prefixBeforeLocalName.
+	prefix := anElementName xmlPrefixBeforeLocalName.
 	self saxHandler 
 		startElement: anElementName
 		prefix: prefix
 		uri: ''
-		localName: (anElementName localNameAfterPrefix: prefix)
+		localName: (anElementName xmlLocalNameAfterPrefix: prefix)
 		attributes: anAttributeDictionary
 ]
 
