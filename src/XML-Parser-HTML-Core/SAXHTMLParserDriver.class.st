@@ -89,7 +89,7 @@ SAXHTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicID systemID: aSyst
 ]
 
 { #category : #handling }
-SAXHTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDictionary namespaces: aNamespaceDictionary [
+SAXHTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDictionary [
 	(self elementNester isRedundantStartTag: anElementName)
 		ifTrue: [^ self].
 

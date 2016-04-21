@@ -2799,8 +2799,7 @@ XMLHTMLParserTokenizer >> nextTag [
 		ifTrue: [self checkForCharsetInMetaAttributes: attributes].
 	driver
 		handleStartTag: tagName
-		attributes: attributes
-		namespaces: nil.
+		attributes: attributes.
 	nextChar == $/
 		ifTrue: [
 			streamReader next.
