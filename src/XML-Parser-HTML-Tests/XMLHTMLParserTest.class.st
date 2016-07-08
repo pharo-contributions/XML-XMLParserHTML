@@ -5,6 +5,16 @@ Class {
 }
 
 { #category : #source }
+XMLHTMLParserTest >> addressBookNamespacePrefixedXML [
+	^ XMLParserTest addressBookNamespacePrefixedXML
+]
+
+{ #category : #source }
+XMLHTMLParserTest >> addressBookNamespacedXML [
+	^ XMLParserTest addressBookNamespacedXML
+]
+
+{ #category : #source }
 XMLHTMLParserTest >> addressBookXML [
 	^ XMLParserTest addressBookXML
 ]
@@ -30,6 +40,19 @@ XMLHTMLParserTest >> benchmark2 [
 	"
 	Smalltalk garbageCollect.
 	^ [4000 timesRepeat: [XMLHTMLParser parse: XMLParserTest addressBookXML]] timeToRun
+]
+
+{ #category : #tests }
+XMLHTMLParserTest >> testAttributes [
+	| document element |
+
+	document := XMLHTMLParser parse: '<test one="quoted" two=''subQuoted'' three=unquoted four'.
+	element := document findElementNamed: 'test'.
+	self
+		assert: (element attributeAt: 'one') = 'quoted';
+		assert: (element attributeAt: 'two') = 'subQuoted';
+		assert: (element attributeAt: 'three') = 'unquoted';
+		assert: (element attributeAt: 'four') isEmpty.
 ]
 
 { #category : #tests }
@@ -117,17 +140,17 @@ XMLHTMLParserTest >> testInnerXML [
 
 	document := XMLHTMLParser parse: self addressBookXML.
 	addressBook := document findElementNamed: 'addressbook'.
-	addressBook firstNode innerXML: 'first'.
-	self assert: addressBook firstNode innerXML = 'first'.
-	addressBook nodes second innerXML: '<second>second</second>'.
-	self assert: addressBook nodes second innerXML = '<second>second</second>'.
-	addressBook nodes third innerXML: '<!--third-->'.
-	self assert: addressBook nodes third innerXML = ''.
-	addressBook lastNode innerXML: '<![CDATA[not ignored]]>'.
-	self assert: addressBook lastNode innerXML = 'not ignored'.
+	addressBook firstElement innerXML: 'first'.
+	self assert: addressBook firstElement innerXML = 'first'.
+	addressBook elements second innerXML: '<second>second</second>'.
+	self assert: addressBook elements second innerXML = '<second>second</second>'.
+	addressBook elements third innerXML: '<!--third-->'.
+	self assert: addressBook elements third innerXML = ''.
+	addressBook lastElement innerXML: '<![CDATA[not ignored]]>'.
+	self assert: addressBook lastElement innerXML = 'not ignored'.
 	self
-		assert: addressBook nodes size = 4;
-		assert: (addressBook nodes allSatisfy: [:each | each isElementNamed: 'person']).
+		assert: addressBook elements size = 4;
+		assert: (addressBook elements allSatisfy: [:each | each isElementNamed: 'person']).
 ]
 
 { #category : #tests }
@@ -136,7 +159,7 @@ XMLHTMLParserTest >> testInnerXMLElement [
 
 	document := XMLHTMLParser parse: self addressBookXML.
 	addressBook := document findElementNamed: 'addressbook'.
-	person := addressBook firstNode.
+	person := addressBook firstElement.
 	personStartTag := person printString copyUpTo: $>.
 	addressBook removeNode: person.
 	person innerXML: '<p>new</p>'.
@@ -180,19 +203,6 @@ XMLHTMLParserTest >> testParseHTML [
 	self
 		assert: html parseHTML printString = html;
 		assert: html readStream parseHTML printString = html.
-]
-
-{ #category : #tests }
-XMLHTMLParserTest >> testParsingAttributes [
-	| document element |
-
-	document := XMLHTMLParser parse: '<test one="quoted" two=''subQuoted'' three=unquoted four'.
-	element := document findElementNamed: 'test'.
-	self
-		assert: (element attributeAt: 'one') = 'quoted';
-		assert: (element attributeAt: 'two') = 'subQuoted';
-		assert: (element attributeAt: 'three') = 'unquoted';
-		assert: (element attributeAt: 'four') isEmpty.
 ]
 
 { #category : #tests }
@@ -422,8 +432,8 @@ XMLHTMLParserTest >> testParsingXML [
 			SAXHTMLHandler
 				parse: self addressBookXML;
 				parse: self addressBookXMLWithDTD;
-				parse: XMLDOMParserTest addressBookNamespacedXML;
-				parse: XMLDOMParserTest addressBookNamespacePrefixedXML]
+				parse: self addressBookNamespacedXML;
+				parse: self addressBookNamespacePrefixedXML]
 		raise: XMLParserException
 ]
 
