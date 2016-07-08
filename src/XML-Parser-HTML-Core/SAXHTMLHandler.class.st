@@ -1,5 +1,5 @@
 "
-This is class is a SAXHandler for HTML.
+This class is a SAXHandler for messy HTML.
 "
 Class {
 	#name : #SAXHTMLHandler,

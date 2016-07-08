@@ -15,7 +15,7 @@ Class {
 		'RedundantEndTags',
 		'VoidElements'
 	],
-	#category : #'XML-Parser-HTML-Core'
+	#category : #'XML-Parser-HTML-Core-Drivers'
 }
 
 { #category : #private }

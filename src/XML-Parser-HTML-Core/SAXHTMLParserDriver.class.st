@@ -1,10 +1,10 @@
 "
-This is the driver for SAXHTMLHandler. It uses XMLHTMLElementNester to make bad HTML nest correctly.
+This is a parser driver for messy HTML. It uses XMLHTMLElementNester to make bad HTML nest correctly.
 "
 Class {
 	#name : #SAXHTMLParserDriver,
 	#superclass : #SAXParserDriver,
-	#category : #'XML-Parser-HTML-Core'
+	#category : #'XML-Parser-HTML-Core-Drivers'
 }
 
 { #category : #private }
@@ -105,7 +105,8 @@ SAXHTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDict
 
 { #category : #handling }
 SAXHTMLParserDriver >> handleWhitespace: aString [
-	self saxHandler ignorableWhitespace: aString
+	self elementNester isInElement
+		ifTrue: [self saxHandler characters: aString]
 ]
 
 { #category : #handling }

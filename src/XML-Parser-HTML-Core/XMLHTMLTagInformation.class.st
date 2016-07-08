@@ -15,7 +15,7 @@ Class {
 		'mutuallyExcludingTag',
 		'nestableTagGroup'
 	],
-	#category : #'XML-Parser-HTML-Core'
+	#category : #'XML-Parser-HTML-Core-Drivers'
 }
 
 { #category : #'instance creation' }

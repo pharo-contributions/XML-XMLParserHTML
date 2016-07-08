@@ -4,7 +4,7 @@ A context for elements containing non-markup code with comments or string litera
 Class {
 	#name : #XMLHTMLNonHTMLCodeSectionContext,
 	#superclass : #XMLHTMLNonHTMLSectionContext,
-	#category : #'XML-Parser-HTML-Core'
+	#category : #'XML-Parser-HTML-Core-Drivers'
 }
 
 { #category : #tokenizing }

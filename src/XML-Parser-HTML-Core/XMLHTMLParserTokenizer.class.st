@@ -10,7 +10,7 @@ Class {
 		'NonHTMLCodeSectionTags',
 		'NonHTMLSectionTags'
 	],
-	#category : #'XML-Parser-HTML-Core'
+	#category : #'XML-Parser-HTML-Core-Drivers'
 }
 
 { #category : #'class initialization' }
@@ -2459,10 +2459,7 @@ XMLHTMLParserTokenizer >> nextAttributeValue [
 		or: [nextChar == nil]]
 		whileFalse: [
 			nextChar == $&
-				ifTrue: [
-					streamReader peek == $#
-						ifTrue: [self nextCharacterReferenceOnWriteStream]
-						ifFalse: [self nextGeneralEntityReferenceOnWriteStream]]
+				ifTrue: [self nextGeneralEntityOrCharacterReferenceOnWriteStream]
 				ifFalse: [writeStream nextPut: nextChar]].
 	context exitLiteralValue.
 
@@ -2478,6 +2475,7 @@ XMLHTMLParserTokenizer >> nextCDataSection [
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextCharacterReferenceOnWriteStream [
+	"returns the character written to the stream or $& if it wasn't replaced"
 	| reader character |
 
 	"skip $#"
@@ -2496,12 +2494,13 @@ XMLHTMLParserTokenizer >> nextCharacterReferenceOnWriteStream [
 		ifTrue: [
 			streamReader peek == $; "; is optional"
 				ifTrue: [streamReader next].
-			writeStream nextPut: character]
+			writeStream nextPut: character.
+			^ character]
 		ifFalse: [
 			writeStream
 				nextPutAll: '&#';
-				nextPutAll: nameStream contents].
-	^ true.
+				nextPutAll: nameStream contents.
+			^ $&].
 ]
 
 { #category : #tokenizing }
@@ -2558,20 +2557,38 @@ XMLHTMLParserTokenizer >> nextEndTag [
 ]
 
 { #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextGeneralEntityOrCharacterReferenceOnWriteStream [
+	"returns the (first) character written to 'writeStream' if any, nil otherwise"
+	streamReader peek == $#
+		ifTrue: [^ self nextCharacterReferenceOnWriteStream]
+		ifFalse: [
+			"nil understands isXMLSeparator so no nil test is needed"
+			streamReader peek isXMLSeparator
+				ifTrue: [
+					writeStream nextPut: $&.
+					^ $&].
+			^ self nextGeneralEntityReferenceOnWriteStream]
+]
+
+{ #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextGeneralEntityReferenceOnWriteStream [
-	| name character |
+	"returns the (first) character written to 'writeStream' if any, nil otherwise"
+	| name |
 
 	name := self nextName.
-	character :=
-		HTMLEntities
-			at: name
-			ifAbsent: [^ self nextUnreplacedGeneralEntityOnWriteStreamNamed: name].
 	driver replacesContentEntityReferences
-		ifFalse: [^ self nextUnreplacedGeneralEntityOnWriteStreamNamed: name].
-	streamReader peek == $; "; is optional"
-		ifTrue: [streamReader next].
-	writeStream nextPut: character.
-	^ true.
+		ifTrue: [
+			HTMLEntities
+				at: name
+				ifPresent: [:character |
+					streamReader peek == $; "; is optional"
+						ifTrue: [streamReader next].
+					writeStream nextPut: character.
+					^ character]].
+	writeStream
+		nextPut: $&;
+		nextPutAll: name.
+	^ $&.
 ]
 
 { #category : #tokenizing }
@@ -2655,30 +2672,24 @@ XMLHTMLParserTokenizer >> nextNonPIPrologOrContentToken [
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextPCDataToken [
-	| isIgnorableWhitespace nextChar |
+	| isWhitespace nextChar |
 
-	isIgnorableWhitespace := true.
+	isWhitespace := true.
 	writeStream reset.
 	[(nextChar := streamReader peek) == $<
 		or: [nextChar == nil]]
 		whileFalse: [
 			streamReader next == $&
 				ifTrue: [
-					"nil understands isXMLSeparator so no nil test is needed"
-					streamReader peek isXMLSeparator
-						ifTrue: [
-							writeStream nextPut: $&.
-							isIgnorableWhitespace := false]
-						ifFalse: [
-							(streamReader peek == $#
-								ifTrue: [self nextCharacterReferenceOnWriteStream]
-								ifFalse: [self nextGeneralEntityReferenceOnWriteStream])
-								ifTrue: [isIgnorableWhitespace := false]]]
+					self nextGeneralEntityOrCharacterReferenceOnWriteStream
+						ifNotNil: [:writtenChar |
+							isWhitespace
+								ifTrue: [isWhitespace := writtenChar isXMLSeparator]]]
 				ifFalse: [
-					isIgnorableWhitespace
-						ifTrue: [isIgnorableWhitespace := nextChar isXMLSeparator].
+					isWhitespace
+						ifTrue: [isWhitespace := nextChar isXMLSeparator].
 					writeStream nextPut: nextChar]].
-	isIgnorableWhitespace
+	isWhitespace
 		ifTrue: [
 			writeStream position > 0
 				ifTrue: [driver handleWhitespace: writeStream contents]]
@@ -2808,15 +2819,6 @@ XMLHTMLParserTokenizer >> nextTag [
 			(NonHTMLSectionTags includes: tagName)
 				ifTrue: [self nextStartNonHTMLElement: tagName]].
 	self expectTerminator.
-]
-
-{ #category : #'entity replacement' }
-XMLHTMLParserTokenizer >> nextUnreplacedGeneralEntityOnWriteStreamNamed: aName [
-	driver handleUnreplacedGeneralEntityReference: aName.
-	writeStream
-		nextPut: $&;
-		nextPutAll: aName.
-	^ true.
 ]
 
 { #category : #tokenizing }

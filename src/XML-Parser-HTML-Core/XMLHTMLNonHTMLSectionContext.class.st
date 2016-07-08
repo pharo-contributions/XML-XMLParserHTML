@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'element'
 	],
-	#category : #'XML-Parser-HTML-Core'
+	#category : #'XML-Parser-HTML-Core-Drivers'
 }
 
 { #category : #'instance creation' }
