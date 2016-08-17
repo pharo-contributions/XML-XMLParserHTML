@@ -13,17 +13,17 @@ SAXHTMLParserDriver >> elementNesterClass [
 ]
 
 { #category : #private }
-SAXHTMLParserDriver >> endElement: anElementName [
+SAXHTMLParserDriver >> endElement: anElement [
 	| prefix |
 
-	self elementNester endElement: anElementName.
+	self elementNester endElement: anElement.
 
-	prefix := anElementName xmlPrefixBeforeLocalName.	
+	prefix := anElement xmlPrefixBeforeLocalName.	
 	self saxHandler 
-		endElement: anElementName
+		endElement: anElement
 		prefix: prefix
 		uri: ''
-		localName: (anElementName xmlLocalNameAfterPrefix: prefix)
+		localName: (anElement xmlLocalNameAfterPrefix: prefix)
 ]
 
 { #category : #handling }
@@ -46,16 +46,16 @@ SAXHTMLParserDriver >> handleEndDocument [
 ]
 
 { #category : #handling }
-SAXHTMLParserDriver >> handleEndTag: anElementName [
-	(self elementNester isRedundantEndTag: anElementName)
+SAXHTMLParserDriver >> handleEndTag: anElement [
+	(self elementNester isRedundantEndTag: anElement)
 		ifTrue: [^ self].
-	(self elementNester hasOpenElement: anElementName)
-		ifFalse: [self startElement: anElementName].
+	(self elementNester hasOpenElement: anElement)
+		ifFalse: [self startElement: anElement].
 		
 	self elementNester
-		beforeEnding: anElementName
+		beforeEnding: anElement
 		elementsToEndDo: [:each | self endElement: each].
-	self endElement: anElementName.
+	self endElement: anElement.
 ]
 
 { #category : #handling }
@@ -89,18 +89,20 @@ SAXHTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicID systemID: aSyst
 ]
 
 { #category : #handling }
-SAXHTMLParserDriver >> handleStartTag: anElementName attributes: anAttributeDictionary [
-	(self elementNester isRedundantStartTag: anElementName)
+SAXHTMLParserDriver >> handleStartTag: anElement attributes: aDictionary [
+	(self elementNester isRedundantStartTag: anElement)
 		ifTrue: [^ self].
 
 	self elementNester
-		beforeStarting: anElementName
+		beforeStarting: anElement
 		elementsToEndDo: [:each | self endElement: each]
 		elementsToStartDo: [:each | self startElement: each].
-	self startElement: anElementName attributes: anAttributeDictionary.
+	self
+		startElement: anElement
+		attributes: aDictionary.
 
-	(self elementNester isVoidElement: anElementName)
-		ifTrue: [self endElement: anElementName].
+	(self elementNester isVoidElement: anElement)
+		ifTrue: [self endElement: anElement].
 ]
 
 { #category : #handling }
@@ -121,25 +123,25 @@ SAXHTMLParserDriver >> handleXMLVersion: aVersion encoding: anEncoding standalon
 ]
 
 { #category : #private }
-SAXHTMLParserDriver >> startElement: anElementName [
+SAXHTMLParserDriver >> startElement: anElement [
 	self
-		startElement: anElementName
-		attributes: (OrderPreservingStringDictionary new: 5)
+		startElement: anElement
+		attributes: (OrderPreservingStringDictionary new: 0)
 ]
 
 { #category : #private }
-SAXHTMLParserDriver >> startElement: anElementName attributes: anAttributeDictionary [
+SAXHTMLParserDriver >> startElement: anElement attributes: aDictionary [
 	| prefix |
 
-	self elementNester startElement: anElementName.
+	self elementNester startElement: anElement.
 
-	prefix := anElementName xmlPrefixBeforeLocalName.
+	prefix := anElement xmlPrefixBeforeLocalName.
 	self saxHandler 
-		startElement: anElementName
+		startElement: anElement
 		prefix: prefix
 		uri: ''
-		localName: (anElementName xmlLocalNameAfterPrefix: prefix)
-		attributes: anAttributeDictionary
+		localName: (anElement xmlLocalNameAfterPrefix: prefix)
+		attributes: aDictionary.
 ]
 
 { #category : #private }

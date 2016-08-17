@@ -11,8 +11,8 @@ Class {
 }
 
 { #category : #'instance creation' }
-XMLHTMLNonHTMLSectionContext class >> element: anElementName [
-	^ self new element: anElementName
+XMLHTMLNonHTMLSectionContext class >> element: anElement [
+	^ self new element: anElement
 ]
 
 { #category : #accessing }
@@ -21,8 +21,8 @@ XMLHTMLNonHTMLSectionContext >> element [
 ]
 
 { #category : #accessing }
-XMLHTMLNonHTMLSectionContext >> element: anElementName [
-	element := anElementName
+XMLHTMLNonHTMLSectionContext >> element: anElement [
+	element := anElement
 ]
 
 { #category : #tokenizing }

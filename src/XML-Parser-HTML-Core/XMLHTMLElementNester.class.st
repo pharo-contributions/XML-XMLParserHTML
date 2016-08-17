@@ -132,9 +132,9 @@ XMLHTMLElementNester class >> voidElements [
 ]
 
 { #category : #checking }
-XMLHTMLElementNester >> beforeEnding: anElementName elementsToEndDo: anElementEndingBlock [
+XMLHTMLElementNester >> beforeEnding: anElement elementsToEndDo: anElementEndingBlock [
 	self openElementsReverseDo: [:each |
-		each = anElementName
+		each = anElement
 			ifTrue: [^ self].
 		anElementEndingBlock value: each].
 ]
@@ -154,13 +154,13 @@ XMLHTMLElementNester >> beforePCDataElementsToEndDo: anElementEndingBlock elemen
 ]
 
 { #category : #checking }
-XMLHTMLElementNester >> beforeStarting: anElementName elementsToEndDo: anElementEndingBlock elementsToStartDo: anElementStartingBlock [
+XMLHTMLElementNester >> beforeStarting: anElement elementsToEndDo: anElementEndingBlock elementsToStartDo: anElementStartingBlock [
 	| htmlTagInfo |
 
 	htmlTagInfo :=
 		HTMLTagInformation
-			at: anElementName
-			ifAbsent: [XMLHTMLTagInformation named: anElementName].
+			at: anElement
+			ifAbsent: [XMLHTMLTagInformation named: anElement].
 			
 	self hasOpenElements
 		ifTrue: [
@@ -230,22 +230,22 @@ XMLHTMLElementNester >> elementsToStartBeforeStartTag: anHTMLTagInfo do: anEleme
 ]
 
 { #category : #checking }
-XMLHTMLElementNester >> endElement: anElementName [
+XMLHTMLElementNester >> endElement: anElement [
 	| association |
 
 	association :=
 		self openElementsByName
-			associationAt: anElementName
-			ifAbsent: [self openElementsByName add: (anElementName -> 1)].
+			associationAt: anElement
+			ifAbsent: [self openElementsByName add: (anElement -> 1)].
 	association value: (association value - 1 max: 0).
 
-	super endElement: anElementName.
+	super endElement: anElement.
 ]
 
 { #category : #testing }
-XMLHTMLElementNester >> hasOpenElement: anElementName [
+XMLHTMLElementNester >> hasOpenElement: anElement [
 	^ (self openElementsByName
-		at: anElementName
+		at: anElement
 		ifAbsent: [0]) > 0
 ]
 
@@ -260,24 +260,24 @@ XMLHTMLElementNester >> initialize [
 ]
 
 { #category : #testing }
-XMLHTMLElementNester >> isRedundantEndTag: anElementName [
-	^ RedundantEndTags includes: anElementName
+XMLHTMLElementNester >> isRedundantEndTag: anElement [
+	^ RedundantEndTags includes: anElement
 ]
 
 { #category : #testing }
-XMLHTMLElementNester >> isRedundantStartTag: anElementName [
-	anElementName = 'html'
+XMLHTMLElementNester >> isRedundantStartTag: anElement [
+	anElement = 'html'
 		ifTrue: [^ self startedHTMLSection].
-	anElementName = 'head'
+	anElement = 'head'
 		ifTrue: [^ self startedHeadSection].
-	anElementName = 'body'
+	anElement = 'body'
 		ifTrue: [^ self startedBodySection].
 	^ false.
 ]
 
 { #category : #testing }
-XMLHTMLElementNester >> isVoidElement: anElementName [
-	^ VoidElements includes: anElementName
+XMLHTMLElementNester >> isVoidElement: anElement [
+	^ VoidElements includes: anElement
 ]
 
 { #category : #private }
@@ -309,13 +309,13 @@ XMLHTMLElementNester >> openElementsByName [
 ]
 
 { #category : #checking }
-XMLHTMLElementNester >> startElement: anElementName [
+XMLHTMLElementNester >> startElement: anElement [
 	| association |
 
 	association :=
 		self openElementsByName
-			associationAt: anElementName
-			ifAbsent: [self openElementsByName add: (anElementName -> 0)].
+			associationAt: anElement
+			ifAbsent: [self openElementsByName add: (anElement -> 0)].
 	association value: association value + 1.
 
 	self startedHTMLSection
@@ -323,12 +323,12 @@ XMLHTMLElementNester >> startElement: anElementName [
 			self startedBodySection
 				ifFalse: [
 					(self startedHeadSection not
-						and: [anElementName = 'head']) 
+						and: [anElement = 'head']) 
 						ifTrue: [startedHeadSection := true]
-						ifFalse: [startedBodySection := anElementName = 'body']]]
-		ifFalse: [startedHTMLSection := anElementName = 'html'].
+						ifFalse: [startedBodySection := anElement = 'body']]]
+		ifFalse: [startedHTMLSection := anElement = 'html'].
 
-	super startElement: anElementName.
+	super startElement: anElement.
 ]
 
 { #category : #testing }
