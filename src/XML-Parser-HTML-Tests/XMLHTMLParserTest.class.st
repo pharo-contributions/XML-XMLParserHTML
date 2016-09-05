@@ -46,13 +46,15 @@ XMLHTMLParserTest >> benchmark2 [
 XMLHTMLParserTest >> testAttributes [
 	| document element |
 
-	document := XMLHTMLParser parse: '<test one="quoted" two=''subQuoted'' three=unquoted four'.
+	document :=
+		XMLHTMLParser parse:
+			'<test one="quoted" two=''subQuoted'' three=unquoted four'.
 	element := document findElementNamed: 'test'.
 	self
 		assert: (element attributeAt: 'one') = 'quoted';
 		assert: (element attributeAt: 'two') = 'subQuoted';
 		assert: (element attributeAt: 'three') = 'unquoted';
-		assert: (element attributeAt: 'four') isEmpty.
+		assert: (element attributeAt: 'four') = ''.
 ]
 
 { #category : #tests }
@@ -536,10 +538,12 @@ XMLHTMLParserTest >> testXMLDeclaration [
 	document := XMLHTMLParser parse: '<?xml ?>'.
 	self
 		assert: document version = 1.0;
-		assert: document encoding isEmpty;
+		assert: document encoding = '';
 		deny: document isStandalone.
 
-	document := XMLHTMLParser parse: '<?xml version="onePointZero" encoding="utf-8" standalone="yes"?>'.
+	document :=
+		XMLHTMLParser parse:
+			'<?xml version="onePointZero" encoding="utf-8" standalone="yes"?>'.
 	self
 		assert: document version = 1.0;
 		assert: document encoding = 'utf-8';
