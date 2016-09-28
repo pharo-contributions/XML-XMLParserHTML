@@ -5,70 +5,129 @@ Class {
 	#name : #XMLHTMLParserTokenizer,
 	#superclass : #XMLParserTokenizer,
 	#classVars : [
-		'HTMLEntities',
 		'HTMLNameDelimiters',
 		'NonHTMLCodeSectionTags',
-		'NonHTMLSectionTags'
+		'NonHTMLSectionTags',
+		'PredefinedHTMLEntities'
 	],
 	#category : #'XML-Parser-HTML-Core-Drivers'
 }
 
-{ #category : #'class initialization' }
-XMLHTMLParserTokenizer class >> compileHTMLEntityPageWithNamedEntities: anAssociationCollection [
+{ #category : #private }
+XMLHTMLParserTokenizer class >> compilePredefinedHTMLEntityPageWithEntities: anAssociationCollection [
 	"There are too many entities to represent literally in a single method,
 	so they're put in a big string and parsed at initialization."
 	| source |
 
-	(source := String new writeStream)
-		nextPutAll: 'htmlEntityPage';
-		cr;
-		tab;
-		nextPut: $^;
-		space;
-		nextPut: $'.
-
-	anAssociationCollection do: [:each |
-		source
-			cr;
-			tab;
-			nextPut: $[;
-			nextPutAll: each key;
-			nextPut: $=;
-			nextPutAll: each value;
-			nextPut: $]].
-	source nextPut: $'.
+	source :=
+		String streamContents: [:stream |
+			stream
+				nextPutAll: 'predefinedHTMLEntityPage';
+				cr;
+				nextPutAll: '	^ '''.
+			anAssociationCollection do: [:each |
+				stream
+					cr;
+					nextPutAll: '	[';
+					nextPutAll: each key;
+					nextPut: $=;
+					nextPutAll: each value;
+					nextPut: $]].
+			stream nextPut: $'].
 
 	self class
 		compile: source contents
-		classified: 'class initialization' asSymbol.
+		classified: #private.
 ]
 
-{ #category : #'class initialization' }
-XMLHTMLParserTokenizer class >> generateHTMLEntityPage [
-	"self generateHTMLEntityPage"
-	| namedEntities json fields entityName codepoint |
+{ #category : #private }
+XMLHTMLParserTokenizer class >> generatePredefinedHTMLEntityPage [
+	"self generatePredefinedHTMLEntityPage"
+	| entityAssociations json fields entityName codePoint |
 
-	namedEntities := OrderedCollection new.
+	entityAssociations := OrderedCollection new.
 	json := 'http://www.w3.org/TR/html5/entities.json' asXMLURI streamGet.
 	[json atEnd]
 		whileFalse: [
 			fields := $: xmlSplit: (json upToAny: String crlf).
 			fields size > 1
 				ifTrue: [
-					entityName := fields first copyWithoutAll: '&;"{', Character separators.
-					codepoint := (fields third copyAfter: $[) copyUpTo: $].
-					namedEntities addLast: entityName -> codepoint]].
+					entityName := fields first select: [:each | each isLetter].
+					codePoint := fields third select: [:each | each isDigit].
+					entityAssociations addLast: entityName -> codePoint]].
 
-	self compileHTMLEntityPageWithNamedEntities: namedEntities.
-]
-
-{ #category : #accessing }
-XMLHTMLParserTokenizer class >> htmlEntities [
-	^ HTMLEntities
+	self compilePredefinedHTMLEntityPageWithEntities: entityAssociations.
 ]
 
 { #category : #'class initialization' }
-XMLHTMLParserTokenizer class >> htmlEntityPage [
+XMLHTMLParserTokenizer class >> initialize [
+	"self initialize"
+
+	self
+		initializePredefinedHTMLEntities;
+		initializeHTMLNameDelimiters;
+		initializeNonHTMLSectionTags;
+		initializeNonHTMLCodeSectionTags
+]
+
+{ #category : #'class initialization' }
+XMLHTMLParserTokenizer class >> initializeHTMLNameDelimiters [
+	"assign after with #yourself to avoid possible race
+	conditions when reinitializing the class"
+	HTMLNameDelimiters :=
+		BitmapCharacterSet new
+			addAll: Character xmlSeparators;
+			add: $>;
+			add: $/;
+			add: $<;
+			add: $=;
+			add: $";
+			add: $';
+			add: $;;
+			yourself
+]
+
+{ #category : #'class initialization' }
+XMLHTMLParserTokenizer class >> initializeNonHTMLCodeSectionTags [
+	NonHTMLCodeSectionTags := #('script' 'style')
+]
+
+{ #category : #'class initialization' }
+XMLHTMLParserTokenizer class >> initializeNonHTMLSectionTags [
+	NonHTMLSectionTags := #('script' 'style' 'title' 'textarea' 'template') asSet
+]
+
+{ #category : #'class initialization' }
+XMLHTMLParserTokenizer class >> initializePredefinedHTMLEntities [
+	| temp entityPage entityName codePoint |
+
+	"use a temp to fully initialize it before assignment to avoid
+	possible race conditions during class reinitialization"
+	temp := Dictionary new.
+	entityPage := self predefinedHTMLEntityPage readStream.
+	[entityPage atEnd]
+		whileFalse: [
+			entityName :=
+				entityPage
+					skipTo: $[;
+					upTo: $=.
+			codePoint := XMLIntegerReader readFrom: entityPage.
+			(entityName notEmpty
+				and: [codePoint notNil])
+				ifTrue: [
+					temp
+						at: entityName
+						put: codePoint asCharacter]].
+	PredefinedHTMLEntities := temp.
+]
+
+{ #category : #accessing }
+XMLHTMLParserTokenizer class >> predefinedHTMLEntities [
+	^ PredefinedHTMLEntities
+]
+
+{ #category : #private }
+XMLHTMLParserTokenizer class >> predefinedHTMLEntityPage [
 	^ '
 	[Aacute=193]
 	[Aacute=193]
@@ -78,7 +137,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[abreve=259]
 	[ac=8766]
 	[acd=8767]
-	[acE=8766, 819]
+	[acE=8766819]
 	[Acirc=194]
 	[Acirc=194]
 	[acirc=226]
@@ -217,12 +276,12 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[blacktriangleleft=9666]
 	[blacktriangleright=9656]
 	[blank=9251]
-	[blk12=9618]
-	[blk14=9617]
-	[blk34=9619]
+	[blk=9618]
+	[blk=9617]
+	[blk=9619]
 	[block=9608]
-	[bne=61, 8421]
-	[bnequiv=8801, 8421]
+	[bne=618421]
+	[bnequiv=88018421]
 	[bNot=10989]
 	[bnot=8976]
 	[Bopf=120121]
@@ -304,7 +363,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[capcup=10823]
 	[capdot=10816]
 	[CapitalDifferentialD=8517]
-	[caps=8745, 65024]
+	[caps=874565024]
 	[caret=8257]
 	[caron=711]
 	[Cayleys=8493]
@@ -413,7 +472,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[cupcup=10826]
 	[cupdot=8845]
 	[cupor=10821]
-	[cups=8746, 65024]
+	[cups=874665024]
 	[curarr=8631]
 	[curarrm=10556]
 	[curlyeqprec=8926]
@@ -593,8 +652,8 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[emptyv=8709]
 	[EmptyVerySmallSquare=9643]
 	[emsp=8195]
-	[emsp13=8196]
-	[emsp14=8197]
+	[emsp=8196]
+	[emsp=8197]
 	[ENG=330]
 	[eng=331]
 	[ensp=8194]
@@ -658,7 +717,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[filig=64257]
 	[FilledSmallSquare=9724]
 	[FilledVerySmallSquare=9642]
-	[fjlig=102, 106]
+	[fjlig=102106]
 	[flat=9837]
 	[fllig=64258]
 	[fltns=9649]
@@ -671,24 +730,24 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[forkv=10969]
 	[Fouriertrf=8497]
 	[fpartint=10765]
-	[frac12=189]
-	[frac12=189]
-	[frac13=8531]
-	[frac14=188]
-	[frac14=188]
-	[frac15=8533]
-	[frac16=8537]
-	[frac18=8539]
-	[frac23=8532]
-	[frac25=8534]
-	[frac34=190]
-	[frac34=190]
-	[frac35=8535]
-	[frac38=8540]
-	[frac45=8536]
-	[frac56=8538]
-	[frac58=8541]
-	[frac78=8542]
+	[frac=189]
+	[frac=189]
+	[frac=8531]
+	[frac=188]
+	[frac=188]
+	[frac=8533]
+	[frac=8537]
+	[frac=8539]
+	[frac=8532]
+	[frac=8534]
+	[frac=190]
+	[frac=190]
+	[frac=8535]
+	[frac=8540]
+	[frac=8536]
+	[frac=8538]
+	[frac=8541]
+	[frac=8542]
 	[frasl=8260]
 	[frown=8994]
 	[Fscr=8497]
@@ -720,7 +779,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[gesdot=10880]
 	[gesdoto=10882]
 	[gesdotol=10884]
-	[gesl=8923, 65024]
+	[gesl=892365024]
 	[gesles=10900]
 	[Gfr=120074]
 	[gfr=120100]
@@ -773,8 +832,8 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[gtreqqless=10892]
 	[gtrless=8823]
 	[gtrsim=8819]
-	[gvertneqq=8809, 65024]
-	[gvnE=8809, 65024]
+	[gvertneqq=880965024]
+	[gvnE=880965024]
 	[Hacek=711]
 	[hairsp=8202]
 	[half=189]
@@ -963,7 +1022,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[lAtail=10523]
 	[latail=10521]
 	[late=10925]
-	[lates=10925, 65024]
+	[lates=1092565024]
 	[lBarr=10510]
 	[lbarr=10508]
 	[lbbrk=10098]
@@ -1034,7 +1093,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[lesdot=10879]
 	[lesdoto=10881]
 	[lesdotor=10883]
-	[lesg=8922, 65024]
+	[lesg=892265024]
 	[lesges=10899]
 	[lessapprox=10885]
 	[lessdot=8918]
@@ -1145,8 +1204,8 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[ltrPar=10646]
 	[lurdshar=10570]
 	[luruhar=10598]
-	[lvertneqq=8808, 65024]
-	[lvnE=8808, 65024]
+	[lvertneqq=880865024]
+	[lvnE=880865024]
 	[macr=175]
 	[macr=175]
 	[male=9794]
@@ -1199,10 +1258,10 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[nabla=8711]
 	[Nacute=323]
 	[nacute=324]
-	[nang=8736, 8402]
+	[nang=87368402]
 	[nap=8777]
-	[napE=10864, 824]
-	[napid=8779, 824]
+	[napE=10864824]
+	[napid=8779824]
 	[napos=329]
 	[napprox=8777]
 	[natur=9838]
@@ -1210,15 +1269,15 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[naturals=8469]
 	[nbsp=160]
 	[nbsp=160]
-	[nbump=8782, 824]
-	[nbumpe=8783, 824]
+	[nbump=8782824]
+	[nbumpe=8783824]
 	[ncap=10819]
 	[Ncaron=327]
 	[ncaron=328]
 	[Ncedil=325]
 	[ncedil=326]
 	[ncong=8775]
-	[ncongdot=10861, 824]
+	[ncongdot=10861824]
 	[ncup=10818]
 	[Ncy=1053]
 	[ncy=1085]
@@ -1228,14 +1287,14 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[neArr=8663]
 	[nearr=8599]
 	[nearrow=8599]
-	[nedot=8784, 824]
+	[nedot=8784824]
 	[NegativeMediumSpace=8203]
 	[NegativeThickSpace=8203]
 	[NegativeThinSpace=8203]
 	[NegativeVeryThinSpace=8203]
 	[nequiv=8802]
 	[nesear=10536]
-	[nesim=8770, 824]
+	[nesim=8770824]
 	[NestedGreaterGreater=8811]
 	[NestedLessLess=8810]
 	[NewLine=10]
@@ -1243,18 +1302,18 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[nexists=8708]
 	[Nfr=120081]
 	[nfr=120107]
-	[ngE=8807, 824]
+	[ngE=8807824]
 	[nge=8817]
 	[ngeq=8817]
-	[ngeqq=8807, 824]
-	[ngeqslant=10878, 824]
-	[nges=10878, 824]
-	[nGg=8921, 824]
+	[ngeqq=8807824]
+	[ngeqslant=10878824]
+	[nges=10878824]
+	[nGg=8921824]
 	[ngsim=8821]
-	[nGt=8811, 8402]
+	[nGt=88118402]
 	[ngt=8815]
 	[ngtr=8815]
-	[nGtv=8811, 824]
+	[nGtv=8811824]
 	[nhArr=8654]
 	[nharr=8622]
 	[nhpar=10994]
@@ -1267,24 +1326,24 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[nlArr=8653]
 	[nlarr=8602]
 	[nldr=8229]
-	[nlE=8806, 824]
+	[nlE=8806824]
 	[nle=8816]
 	[nLeftarrow=8653]
 	[nleftarrow=8602]
 	[nLeftrightarrow=8654]
 	[nleftrightarrow=8622]
 	[nleq=8816]
-	[nleqq=8806, 824]
-	[nleqslant=10877, 824]
-	[nles=10877, 824]
+	[nleqq=8806824]
+	[nleqslant=10877824]
+	[nles=10877824]
 	[nless=8814]
-	[nLl=8920, 824]
+	[nLl=8920824]
 	[nlsim=8820]
-	[nLt=8810, 8402]
+	[nLt=88108402]
 	[nlt=8814]
 	[nltri=8938]
 	[nltrie=8940]
-	[nLtv=8810, 824]
+	[nLtv=8810824]
 	[nmid=8740]
 	[NoBreak=8288]
 	[NonBreakingSpace=160]
@@ -1298,56 +1357,56 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[NotDoubleVerticalBar=8742]
 	[NotElement=8713]
 	[NotEqual=8800]
-	[NotEqualTilde=8770, 824]
+	[NotEqualTilde=8770824]
 	[NotExists=8708]
 	[NotGreater=8815]
 	[NotGreaterEqual=8817]
-	[NotGreaterFullEqual=8807, 824]
-	[NotGreaterGreater=8811, 824]
+	[NotGreaterFullEqual=8807824]
+	[NotGreaterGreater=8811824]
 	[NotGreaterLess=8825]
-	[NotGreaterSlantEqual=10878, 824]
+	[NotGreaterSlantEqual=10878824]
 	[NotGreaterTilde=8821]
-	[NotHumpDownHump=8782, 824]
-	[NotHumpEqual=8783, 824]
+	[NotHumpDownHump=8782824]
+	[NotHumpEqual=8783824]
 	[notin=8713]
-	[notindot=8949, 824]
-	[notinE=8953, 824]
+	[notindot=8949824]
+	[notinE=8953824]
 	[notinva=8713]
 	[notinvb=8951]
 	[notinvc=8950]
 	[NotLeftTriangle=8938]
-	[NotLeftTriangleBar=10703, 824]
+	[NotLeftTriangleBar=10703824]
 	[NotLeftTriangleEqual=8940]
 	[NotLess=8814]
 	[NotLessEqual=8816]
 	[NotLessGreater=8824]
-	[NotLessLess=8810, 824]
-	[NotLessSlantEqual=10877, 824]
+	[NotLessLess=8810824]
+	[NotLessSlantEqual=10877824]
 	[NotLessTilde=8820]
-	[NotNestedGreaterGreater=10914, 824]
-	[NotNestedLessLess=10913, 824]
+	[NotNestedGreaterGreater=10914824]
+	[NotNestedLessLess=10913824]
 	[notni=8716]
 	[notniva=8716]
 	[notnivb=8958]
 	[notnivc=8957]
 	[NotPrecedes=8832]
-	[NotPrecedesEqual=10927, 824]
+	[NotPrecedesEqual=10927824]
 	[NotPrecedesSlantEqual=8928]
 	[NotReverseElement=8716]
 	[NotRightTriangle=8939]
-	[NotRightTriangleBar=10704, 824]
+	[NotRightTriangleBar=10704824]
 	[NotRightTriangleEqual=8941]
-	[NotSquareSubset=8847, 824]
+	[NotSquareSubset=8847824]
 	[NotSquareSubsetEqual=8930]
-	[NotSquareSuperset=8848, 824]
+	[NotSquareSuperset=8848824]
 	[NotSquareSupersetEqual=8931]
-	[NotSubset=8834, 8402]
+	[NotSubset=88348402]
 	[NotSubsetEqual=8840]
 	[NotSucceeds=8833]
-	[NotSucceedsEqual=10928, 824]
+	[NotSucceedsEqual=10928824]
 	[NotSucceedsSlantEqual=8929]
-	[NotSucceedsTilde=8831, 824]
-	[NotSuperset=8835, 8402]
+	[NotSucceedsTilde=8831824]
+	[NotSuperset=88358402]
 	[NotSupersetEqual=8841]
 	[NotTilde=8769]
 	[NotTildeEqual=8772]
@@ -1356,25 +1415,25 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[NotVerticalBar=8740]
 	[npar=8742]
 	[nparallel=8742]
-	[nparsl=11005, 8421]
-	[npart=8706, 824]
+	[nparsl=110058421]
+	[npart=8706824]
 	[npolint=10772]
 	[npr=8832]
 	[nprcue=8928]
-	[npre=10927, 824]
+	[npre=10927824]
 	[nprec=8832]
-	[npreceq=10927, 824]
+	[npreceq=10927824]
 	[nrArr=8655]
 	[nrarr=8603]
-	[nrarrc=10547, 824]
-	[nrarrw=8605, 824]
+	[nrarrc=10547824]
+	[nrarrw=8605824]
 	[nRightarrow=8655]
 	[nrightarrow=8603]
 	[nrtri=8939]
 	[nrtrie=8941]
 	[nsc=8833]
 	[nsccue=8929]
-	[nsce=10928, 824]
+	[nsce=10928824]
 	[Nscr=119977]
 	[nscr=120003]
 	[nshortmid=8740]
@@ -1387,19 +1446,19 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[nsqsube=8930]
 	[nsqsupe=8931]
 	[nsub=8836]
-	[nsubE=10949, 824]
+	[nsubE=10949824]
 	[nsube=8840]
-	[nsubset=8834, 8402]
+	[nsubset=88348402]
 	[nsubseteq=8840]
-	[nsubseteqq=10949, 824]
+	[nsubseteqq=10949824]
 	[nsucc=8833]
-	[nsucceq=10928, 824]
+	[nsucceq=10928824]
 	[nsup=8837]
-	[nsupE=10950, 824]
+	[nsupE=10950824]
 	[nsupe=8841]
-	[nsupset=8835, 8402]
+	[nsupset=88358402]
 	[nsupseteq=8841]
-	[nsupseteqq=10950, 824]
+	[nsupseteqq=10950824]
 	[ntgl=8825]
 	[Ntilde=209]
 	[Ntilde=209]
@@ -1415,22 +1474,22 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[num=35]
 	[numero=8470]
 	[numsp=8199]
-	[nvap=8781, 8402]
+	[nvap=87818402]
 	[nVDash=8879]
 	[nVdash=8878]
 	[nvDash=8877]
 	[nvdash=8876]
-	[nvge=8805, 8402]
-	[nvgt=62, 8402]
+	[nvge=88058402]
+	[nvgt=628402]
 	[nvHarr=10500]
 	[nvinfin=10718]
 	[nvlArr=10498]
-	[nvle=8804, 8402]
-	[nvlt=60, 8402]
-	[nvltrie=8884, 8402]
+	[nvle=88048402]
+	[nvlt=608402]
+	[nvltrie=88848402]
 	[nvrArr=10499]
-	[nvrtrie=8885, 8402]
-	[nvsim=8764, 8402]
+	[nvrtrie=88858402]
+	[nvsim=87648402]
 	[nwarhk=10531]
 	[nwArr=8662]
 	[nwarr=8598]
@@ -1631,7 +1690,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[quot=34]
 	[quot=34]
 	[rAarr=8667]
-	[race=8765, 817]
+	[race=8765817]
 	[Racute=340]
 	[racute=341]
 	[radic=8730]
@@ -1855,7 +1914,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[smile=8995]
 	[smt=10922]
 	[smte=10924]
-	[smtes=10924, 65024]
+	[smtes=1092465024]
 	[SOFTcy=1068]
 	[softcy=1100]
 	[sol=47]
@@ -1867,9 +1926,9 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[spadesuit=9824]
 	[spar=8741]
 	[sqcap=8851]
-	[sqcaps=8851, 65024]
+	[sqcaps=885165024]
 	[sqcup=8852]
-	[sqcups=8852, 65024]
+	[sqcups=885265024]
 	[Sqrt=8730]
 	[sqsub=8847]
 	[sqsube=8849]
@@ -1941,12 +2000,12 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[sung=9834]
 	[Sup=8913]
 	[sup=8835]
-	[sup1=185]
-	[sup1=185]
-	[sup2=178]
-	[sup2=178]
-	[sup3=179]
-	[sup3=179]
+	[sup=185]
+	[sup=185]
+	[sup=178]
+	[sup=178]
+	[sup=179]
+	[sup=179]
 	[supdot=10942]
 	[supdsub=10968]
 	[supE=10950]
@@ -1992,7 +2051,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[telrec=8981]
 	[Tfr=120087]
 	[tfr=120113]
-	[there4=8756]
+	[there=8756]
 	[Therefore=8756]
 	[therefore=8756]
 	[Theta=920]
@@ -2001,7 +2060,7 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[thetav=977]
 	[thickapprox=8776]
 	[thicksim=8764]
-	[ThickSpace=8287, 8202]
+	[ThickSpace=82878202]
 	[thinsp=8201]
 	[ThinSpace=8201]
 	[thkap=8776]
@@ -2161,10 +2220,10 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[varr=8597]
 	[varrho=1009]
 	[varsigma=962]
-	[varsubsetneq=8842, 65024]
-	[varsubsetneqq=10955, 65024]
-	[varsupsetneq=8843, 65024]
-	[varsupsetneqq=10956, 65024]
+	[varsubsetneq=884265024]
+	[varsubsetneqq=1095565024]
+	[varsupsetneq=884365024]
+	[varsupsetneqq=1095665024]
 	[vartheta=977]
 	[vartriangleleft=8882]
 	[vartriangleright=8883]
@@ -2195,18 +2254,18 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[Vfr=120089]
 	[vfr=120115]
 	[vltri=8882]
-	[vnsub=8834, 8402]
-	[vnsup=8835, 8402]
+	[vnsub=88348402]
+	[vnsup=88358402]
 	[Vopf=120141]
 	[vopf=120167]
 	[vprop=8733]
 	[vrtri=8883]
 	[Vscr=119985]
 	[vscr=120011]
-	[vsubnE=10955, 65024]
-	[vsubne=8842, 65024]
-	[vsupnE=10956, 65024]
-	[vsupne=8843, 65024]
+	[vsubnE=1095565024]
+	[vsubne=884265024]
+	[vsupnE=1095665024]
+	[vsupne=884365024]
 	[Vvdash=8874]
 	[vzigzag=10650]
 	[Wcirc=372]
@@ -2301,63 +2360,6 @@ XMLHTMLParserTokenizer class >> htmlEntityPage [
 	[zscr=120015]
 	[zwj=8205]
 	[zwnj=8204]'
-]
-
-{ #category : #'class initialization' }
-XMLHTMLParserTokenizer class >> initialize [
-	"self initialize"
-
-	self
-		initializeHTMLEntities;
-		initializeHTMLNameDelimiters;
-		initializeNonHTMLSectionTags;
-		initializeNonHTMLCodeSectionTags
-]
-
-{ #category : #'class initialization' }
-XMLHTMLParserTokenizer class >> initializeHTMLEntities [
-	| entityPage entityName codePoint |
-
-	HTMLEntities := Dictionary new.
-	entityPage := self htmlEntityPage readStream.
-	[entityPage atEnd]
-		whileFalse: [
-			entityPage skipTo: $[.
-			entityName := entityPage upTo: $=.
-			codePoint := (XMLIntegerReader readFrom: entityPage).
-			(entityName notEmpty and: [codePoint notNil])
-				ifTrue: [
-					HTMLEntities
-						at: entityName
-						put: codePoint asCharacter]].
-]
-
-{ #category : #'class initialization' }
-XMLHTMLParserTokenizer class >> initializeHTMLNameDelimiters [
-	(HTMLNameDelimiters := BitmapCharacterSet new)
-		addAll: Character xmlSeparators;
-		add: $>;
-		add: $/;
-		add: $<;
-		add: $=;
-		add: $";
-		add: $';
-		add: $;
-]
-
-{ #category : #'class initialization' }
-XMLHTMLParserTokenizer class >> initializeNonHTMLCodeSectionTags [
-	NonHTMLCodeSectionTags := #('script' 'style')
-]
-
-{ #category : #'class initialization' }
-XMLHTMLParserTokenizer class >> initializeNonHTMLSectionTags [
-	NonHTMLSectionTags := #('script' 'style' 'title' 'textarea' 'template') asSet
-]
-
-{ #category : #accessing }
-XMLHTMLParserTokenizer class >> predefinedEntities [
-	^ self htmlEntities
 ]
 
 { #category : #testing }
@@ -2578,7 +2580,7 @@ XMLHTMLParserTokenizer >> nextGeneralEntityReferenceOnWriteStream [
 	name := self nextName.
 	driver replacesContentEntityReferences
 		ifTrue: [
-			HTMLEntities
+			PredefinedHTMLEntities
 				at: name
 				ifPresent: [:character |
 					streamReader peek == $; "; is optional"

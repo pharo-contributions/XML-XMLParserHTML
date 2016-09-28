@@ -20,26 +20,40 @@ Class {
 
 { #category : #private }
 XMLHTMLElementNester class >> bodySectionElements [
-	^ #('a' 'abbr' 'acronym' 'address' 'applet' 'area' 'article' 'aside' 'audio' 'b' 'basefont'
-		'bdi' 'bdo' 'big' 'blockquote' 'br' 'button' 'canvas' 'caption' 'center' 'cite' 'code'
-		'col' 'colgroup' 'command' 'data' 'datagrid' 'datalist' 'dd' 'del' 'details' 'dfn' 'dir'
-		'div' 'dl' 'dt' 'em' 'embed' 'eventsource' 'fieldset' 'figcaption' 'figure' 'font'
-		'footer' 'form' 'frame' 'frameset' 'h1' 'h2' 'h3' 'h4' 'h5' 'h6' 'header' 'hgroup' 'hr'
-		'i' 'iframe' 'img' 'input' 'ins' 'kbd' 'keygen' 'label' 'legend' 'li' 'map' 'mark' 'menu'
-		'meter' 'nav' 'noframes' 'noscript' 'object' 'ol' 'optgroup' 'option' 'output' 'p'
-		'param' 'pre' 'progress' 'q' 'rp' 'rt' 'ruby' 's' 'samp' 'script' 'section' 'select' 'small'
-		'source' 'span' 'strike' 'strong' 'style' 'sub' 'summary' 'sup' 'table' 'tbody' 'td'
-		'textarea' 'tfoot' 'th' 'thead' 'time' 'tr' 'track' 'tt' 'u' 'ul' 'var' 'video' 'wbr')
+	^ #('a' 'abbr' 'acronym' 'address' 'applet'
+		'area' 'article' 'aside' 'audio' 'b'
+		'basefont' 'bdi' 'bdo' 'big' 'blockquote'
+		'br' 'button' 'canvas' 'caption' 'center'
+		'cite' 'code' 'col' 'colgroup' 'command'
+		'data' 'datagrid' 'datalist' 'dd' 'del'
+		'details' 'dfn' 'dir' 'div' 'dl'
+		'dt' 'em' 'embed' 'eventsource' 'fieldset'
+		'figcaption' 'figure' 'font' 'footer' 'form'
+		'frame' 'frameset' 'h1' 'h2' 'h3'
+		'h4' 'h5' 'h6' 'header' 'hgroup'
+		'hr' 'i' 'iframe' 'img' 'input'
+		'ins' 'kbd' 'keygen' 'label' 'legend'
+		'li' 'map' 'mark' 'menu' 'meter' 'nav'
+		'noframes' 'noscript' 'object' 'ol' 'optgroup'
+		'option' 'output' 'p' 'param' 'pre'
+		'progress' 'q' 'rp' 'rt' 'ruby'
+		's' 'samp' 'script' 'section' 'select'
+		'small' 'source' 'span' 'strike' 'strong'
+		'style' 'sub' 'summary' 'sup' 'table'
+		'tbody' 'td' 'textarea' 'tfoot' 'th'
+		'thead' 'time' 'tr' 'track' 'tt'
+		'u' 'ul' 'var' 'video' 'wbr')
 ]
 
 { #category : #private }
 XMLHTMLElementNester class >> headSectionElements [
-	^ #('base' 'isindex' 'link' 'meta' 'noscript' 'object' 'script' 'style' 'template' 'title')
+	^ #('base' 'isindex' 'link' 'meta' 'noscript'
+		'object' 'script' 'style' 'template' 'title')
 ]
 
 { #category : #private }
-XMLHTMLElementNester class >> htmlTagInfoFor: aName [
-	^ HTMLTagInformation
+XMLHTMLElementNester class >> htmlTagInformationIn: aDictionary named: aName [
+	^ aDictionary
 		at: aName
 		ifAbsentPut: [XMLHTMLTagInformation named: aName]
 ]
@@ -56,30 +70,53 @@ XMLHTMLElementNester class >> initialize [
 
 { #category : #'class initialization' }
 XMLHTMLElementNester class >> initializeHTMLTagInformation [
-	HTMLTagInformation := Dictionary new.
+	| temp |
 
-	#('html' 'head' 'body') do: [:each | self htmlTagInfoFor: each].
+	"use a temp to fully initialize it before assignment to avoid
+	possible race conditions during class reinitialization"
+	temp := Dictionary new.
+
+	#('html' 'head' 'body') do: [:each |
+		self
+			htmlTagInformationIn: temp
+			named: each].
 
 	self bodySectionElements do: [:each |
-		(self htmlTagInfoFor: each) isBodySectionTag: true].
+		(self
+			htmlTagInformationIn: temp
+			named: each) isBodySectionTag: true].
 	self headSectionElements do: [:each |
-		(self htmlTagInfoFor: each) isHeadSectionTag: true].
+		(self
+			htmlTagInformationIn: temp
+			named: each) isHeadSectionTag: true].
 
 	self mutuallyExcludingTags keysAndValuesDo: [:key :value |
-		(self htmlTagInfoFor: key) mutuallyExcludingTag: value].
+		(self
+			htmlTagInformationIn: temp
+			named: key) mutuallyExcludingTag: value].
 	self nestableTagGroups keysAndValuesDo: [:key :value |
-		(self htmlTagInfoFor: key) nestableTagGroup: value].
+		(self
+			htmlTagInformationIn: temp
+			named: key) nestableTagGroup: value].
 
 	self nonNestableElements do: [:each |
-		(self htmlTagInfoFor: each) isNonNestable: true].
+		(self
+			htmlTagInformationIn: temp
+			named: each) isNonNestable: true].
+
+	HTMLTagInformation := temp.
 ]
 
 { #category : #'class initialization' }
 XMLHTMLElementNester class >> initializeRedundantEndTags [
-	RedundantEndTags := self voidElements asSet.
-
-	"html/body are redundant end tags because they should remain open until the end"
-	RedundantEndTags addAll: #('html' 'body').
+	"assign after with #yourself to avoid possible race
+	conditions when reinitializing the class"
+	RedundantEndTags :=
+		self voidElements asSet
+			"html/body are redundant end tags because they
+			should remain open until the end"
+			addAll: #('html' 'body');
+			yourself
 ]
 
 { #category : #'class initialization' }
@@ -97,7 +134,10 @@ XMLHTMLElementNester class >> mutuallyExcludingTags [
 			tagList do: [:tag |
 				tagList do: [:each |
 					(each = tag)
-						ifFalse: [mutuallyExcludingTags at: each put: tag]]]].
+						ifFalse: [
+							mutuallyExcludingTags
+								at: each
+								put: tag]]]].
 	^ mutuallyExcludingTags.
 ]
 
@@ -106,29 +146,38 @@ XMLHTMLElementNester class >> nestableTagGroups [
 	| nestableTagGroups |
 
 	nestableTagGroups := Dictionary new.
-
 	#('dd' 'dt') do: [:each |
-		nestableTagGroups at: each put: #('dl')].
+		nestableTagGroups
+			at: each
+			put: #('dl')].
 	#('tr' 'th' 'td' 'thead' 'tfoot') do: [:each |
-		nestableTagGroups at: each put: #('table')].
+		nestableTagGroups
+			at: each
+			put: #('table')].
 	#('rp' 'rt') do: [:each |
-		nestableTagGroups at: each put: #('ruby')].
-	nestableTagGroups at: 'li' put: #('ul' 'ol' 'menu' 'dir') asSet.
-
+		nestableTagGroups
+			at: each
+			put: #('ruby')].
+	nestableTagGroups
+		at: 'li'
+		put: #('ul' 'ol' 'menu' 'dir') asSet.
 	^ nestableTagGroups.
 ]
 
 { #category : #private }
 XMLHTMLElementNester class >> nonNestableElements [
-	^ #('a' 'applet' 'audio' 'button' 'footer' 'form' 'header' 'label' 'map'
-		'meter' 'optgroup' 'option' 'ruby' 'select' 'video'),
+	^ #('a' 'applet' 'audio' 'button' 'footer'
+		'form' 'header' 'label' 'map' 'meter'
+		'optgroup' 'option' 'ruby' 'select' 'video'),
 		self nestableTagGroups keys asArray
 ]
 
 { #category : #private }
 XMLHTMLElementNester class >> voidElements [
-	^ #('area' 'base' 'br' 'col' 'command' 'embed' 'frame' 'hr' 'img' 'input'
-		'keygen' 'link' 'menuitem' 'meta' 'param' 'source' 'track' 'wbr')
+	^ #('area' 'base' 'br' 'col' 'command'
+		'embed' 'frame' 'hr' 'img' 'input'
+		'keygen' 'link' 'menuitem' 'meta' 'param'
+		'source' 'track' 'wbr')
 ]
 
 { #category : #checking }
