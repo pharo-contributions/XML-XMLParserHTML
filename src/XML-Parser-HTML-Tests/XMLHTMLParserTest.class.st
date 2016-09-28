@@ -100,7 +100,7 @@ XMLHTMLParserTest >> testHTMLEntities [
 	| entity character document p |
 
 	entity := 'nbsp'.
-	character := XMLHTMLParserTokenizer predefinedEntities at: entity.
+	character := XMLHTMLParserTokenizer predefinedHTMLEntities at: entity.
 	document :=
 		XMLHTMLParser parse:
 			'<p>&', entity, ';&', entity, '</p>',
@@ -118,7 +118,7 @@ XMLHTMLParserTest >> testHTMLEntitiesUnreplaced [
 	| entity character document |
 
 	entity := 'nbsp'.
-	character := XMLHTMLParserTokenizer predefinedEntities at: entity.
+	character := XMLHTMLParserTokenizer predefinedHTMLEntities at: entity.
 	document :=
 		(XMLHTMLParser on:
 			'<p>&', entity, ';&', entity, '</p>',
