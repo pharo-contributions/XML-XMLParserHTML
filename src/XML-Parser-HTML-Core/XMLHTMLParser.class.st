@@ -33,9 +33,10 @@ XMLHTMLParser >> pushInnerXMLRootNode: aRootNode [
 XMLHTMLParser >> startInnerXMLElement: anElement forParser: aParser [
 	| elementNester |
 
-	(elementNester := aParser driver elementNester)
+	elementNester := aParser driver elementNester.
+	elementNester
 		beforeStarting: anElement name
 		elementsToEndDo: [:each | ]
-		elementsToStartDo: [:each | elementNester startElement: each];
-		startElement: anElement name
+		elementsToStartDo: [:each | elementNester startElement: each].
+	elementNester startElement: anElement name.
 ]

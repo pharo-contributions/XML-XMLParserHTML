@@ -111,12 +111,7 @@ XMLHTMLElementNester class >> initializeHTMLTagInformation [
 XMLHTMLElementNester class >> initializeRedundantEndTags [
 	"assign after with #yourself to avoid possible race
 	conditions when reinitializing the class"
-	RedundantEndTags :=
-		self voidElements asSet
-			"html/body are redundant end tags because they
-			should remain open until the end"
-			addAll: #('html' 'body');
-			yourself
+	RedundantEndTags := self voidElements asSet
 ]
 
 { #category : #'class initialization' }
