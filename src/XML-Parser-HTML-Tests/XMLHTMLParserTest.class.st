@@ -231,7 +231,7 @@ XMLHTMLParserTest >> testParseHTML [
 
 { #category : #tests }
 XMLHTMLParserTest >> testParsingCDATA [
-	#(
+	#('<![CDATA[not ignored]]>'
 		'<body><![CDATA[not ignored]]></body>'
 		'<!DOCTYPE><![CDATA[not ignored]]><html><body/>')
 		do: [:each | | document |
@@ -334,6 +334,55 @@ XMLHTMLParserTest >> testParsingNonHTMLSections [
 		assert: (document findElementNamed: 'script') contentString =
 			'1 < 2; 3 > 2; document.write("</Script>");';
 		assert: (document findElementNamed: 'style') contentString = '//"'.
+]
+
+{ #category : #tests }
+XMLHTMLParserTest >> testParsingRedundantStartTags [
+	| document html head body |
+
+	document :=
+		XMLHTMLParser parse:
+			'<html>
+				<head><html>
+					<title>test</title><head>
+					<script>test()</script><head/>
+				</head><html/>
+				<body>one<body>two<body/>three</body><!--ignored-->
+			</html>'.
+	self
+		assert: document nodes size = 1;
+		assert: (document firstNode isElementNamed: 'html').
+
+	html := document firstNode.
+	self
+		assert: html nodes size = 5;
+		assert: html nodes first isStringNode;
+		assert: html nodes first isWhitespace;
+		assert: (html nodes second isElementNamed: 'head');
+		assert: html nodes third isStringNode;
+		assert: html nodes third isWhitespace;
+		assert: (html nodes fourth isElementNamed: 'body');
+		assert: html nodes fifth isStringNode;
+		assert: html nodes fifth isWhitespace.
+
+	head := html nodes second.
+	self
+		assert: head nodes size = 5;
+		assert: head nodes first isStringNode;
+		assert: head nodes first isWhitespace;
+		assert: (head nodes second isElementNamed: 'title');
+		assert: head nodes second contentString = 'test';
+		assert: head nodes third isStringNode;
+		assert: head nodes third isWhitespace;
+		assert: (head nodes fourth isElementNamed: 'script');
+		assert: head nodes fourth contentString = 'test()';
+		assert: head nodes fifth isStringNode;
+		assert: head nodes fifth isWhitespace.
+
+	body := html nodes fourth.
+	self
+		assert: body nodes size = 1;
+		assert: body firstNode contentString = 'onetwothree'.
 ]
 
 { #category : #tests }
@@ -440,13 +489,20 @@ XMLHTMLParserTest >> testParsingUnknownTag [
 
 { #category : #tests }
 XMLHTMLParserTest >> testParsingVoidElements [
-	| document |
+	| document body |
 
-	document := XMLHTMLParser parse: '<body>one<img>two</img><body>three'.
+	document :=
+		XMLHTMLParser parse:
+			'<body>one<img src="a.jpg">two</img><body>three<img src="b.jpg"/>'.
+	body := document findElementNamed: 'body'.
 	self
-		assert: (document allElementsCollect: [:each | each name]) asArray = #('html' 'body' 'img');
-		assert: (document findElementNamed: 'body') contentString = 'one twothree';
-		deny: (document findElementNamed: 'img') hasChildren.
+		assert: body nodes size = 4;
+		assert: (body nodes first isStringNode: 'one');
+		assert: (body nodes second isElementNamed: 'img');
+		assert: (body nodes second attributeAt: 'src') = 'a.jpg';
+		assert: (body nodes third isStringNode: 'twothree');
+		assert: (body nodes fourth isElementNamed: 'img');
+		assert: (body nodes fourth attributeAt: 'src') = 'b.jpg'.
 ]
 
 { #category : #tests }
@@ -541,11 +597,17 @@ XMLHTMLParserTest >> testXMLDeclaration [
 		assert: document encoding = '';
 		deny: document isStandalone.
 
+	document := XMLHTMLParser parse: '<?xml version="1.1" ?>'.
+	self
+		assert: document version = 1.1;
+		assert: document encoding = '';
+		deny: document isStandalone.
+
 	document :=
 		XMLHTMLParser parse:
 			'<?xml version="onePointZero" encoding="utf-8" standalone="yes"?>'.
 	self
 		assert: document version = 1.0;
 		assert: document encoding = 'utf-8';
-		deny: document isStandalone.
+		assert: document isStandalone.
 ]
