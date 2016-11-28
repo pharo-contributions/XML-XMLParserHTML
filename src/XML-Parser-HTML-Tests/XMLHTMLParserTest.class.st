@@ -519,32 +519,71 @@ XMLHTMLParserTest >> testParsingXML [
 
 { #category : #tests }
 XMLHTMLParserTest >> testProcessingInstructions [
-	| document |
+	| document html body |
 
-	document := XMLHTMLParser parse: '<body><?ignored data?></body>'.
-	self deny: (document findElementNamed: 'body') hasChildren.
+	document := XMLHTMLParser parse: '<?one two?><body><?three four?></body><?five six?>'.
+	self
+		assert: document nodes size = 2;
+		assert: document nodes first isPI;
+		assert: document nodes first target = 'one';
+		assert: document nodes first data = 'two';
+		assert: (document nodes second isElementNamed: 'html').
+
+	html := document nodes second.
+	self
+		assert: html nodes size = 2;
+		assert: (html nodes first isElementNamed: 'body');
+		assert: html nodes second isPI;
+		assert: html nodes second target = 'five';
+		assert: html nodes second data = 'six'.
+	
+	body := html nodes first.
+	self
+		assert: body nodes size = 1;
+		assert: body nodes first isPI;
+		assert: body nodes first target = 'three';
+		assert: body nodes first data = 'four'.
 ]
 
 { #category : #tests }
 XMLHTMLParserTest >> testReopeningHTML [
 	| document html body |
 
-	document := XMLHTMLParser parse: '<html><B></body></html><I>test'.
+	document := XMLHTMLParser parse: '<html><B>one</body></html><I>two'.
+	self
+		assert: document nodes size = 1;
+		assert: (document firstNode isElementNamed: 'html').
+
 	html := document root.
 	self
-		assert: (html isElementNamed: 'html');
-		assert: html nodes size = 1.
+		assert: html nodes size = 1;
+		assert: (html firstNode isElementNamed: 'body').
+
 	body := html firstNode.
 	self
-		assert: (body isElementNamed: 'body');
-		assert: body nodes size = 1;
-		assert: (body firstNode isElementNamed: 'b');
-		assert: body firstNode nodes size = 1;
-		assert: (body firstNode firstNode isElementNamed: 'i');
-		assert: body firstNode firstNode contentString = 'test'.
+		assert: body nodes size = 2;
+		assert: (body nodes first isElementNamed: 'b');
+		assert: body nodes first nodes size = 1;
+		assert: (body nodes first firstNode isStringNode: 'one');
+		assert: (body nodes second isElementNamed: 'i');
+		assert: body nodes second contentString = 'two'.
 
-	document := XMLHTMLParser parse: '<html><B>bold</body></html>bold'.
-	self assert: (document findElementNamed: 'b') contentString = 'boldbold'.
+	document := XMLHTMLParser parse: '<html><B>bold</body></html> '.
+	self
+		assert: document nodes size = 1;
+		assert: (document firstNode isElementNamed: 'html').
+
+	html := document root.
+	self
+		assert: html nodes size = 1;
+		assert: (html firstNode isElementNamed: 'body').
+
+	body := html firstNode.
+	self
+		assert: body nodes size = 1;
+		assert: (body nodes first isElementNamed: 'b');
+		assert: body nodes first nodes size = 1;
+		assert: (body nodes first firstNode isStringNode: 'bold').
 ]
 
 { #category : #tests }
@@ -610,4 +649,17 @@ XMLHTMLParserTest >> testXMLDeclaration [
 		assert: document version = 1.0;
 		assert: document encoding = 'utf-8';
 		assert: document isStandalone.
+
+	document :=
+		XMLHTMLParser parse:
+			'<?xml version="1.1" ?>
+			<?xml version="1.0" encoding="utf-8" standalone="yes"?>'.
+	self
+		assert: document version = 1.1;
+		assert: document encoding = '';
+		deny: document isStandalone;
+		assert: document nodes size = 1;
+		assert: document firstNode isPI;
+		assert: document firstNode target = 'xml';
+		assert: document firstNode data = 'version="1.0" encoding="utf-8" standalone="yes"'.
 ]
