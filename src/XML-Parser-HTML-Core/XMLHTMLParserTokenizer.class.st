@@ -2434,7 +2434,7 @@ XMLHTMLParserTokenizer >> expectNextAll: aString [
 		streamReader peek == each
 			ifTrue: [streamReader next]
 			ifFalse: [
-				self nextName.
+				self nextElementName.
 				^ aString]].
 	^ aString.
 ]
@@ -2454,18 +2454,18 @@ XMLHTMLParserTokenizer >> nextAttributeValue [
 	| quote nextChar |
 
 	streamReader atQuote
-		ifFalse: [^ self nextName].
+		ifFalse: [^ self nextElementName].
 	quote := streamReader next.
 
-	characterDataStream reset.
+	characterStream reset.
 	[(nextChar := streamReader next) == quote
 		or: [nextChar == nil]]
 		whileFalse: [
 			nextChar == $&
 				ifTrue: [
-					self nextGeneralEntityOrCharacterReferenceOnCharacterDataStream]
-				ifFalse: [characterDataStream nextPut: nextChar]].
-	^ characterDataStream contents.
+					self nextGeneralEntityOrCharacterReferenceOnCharacterStream]
+				ifFalse: [characterStream nextPut: nextChar]].
+	^ characterStream contents.
 ]
 
 { #category : #tokenizing }
@@ -2473,7 +2473,7 @@ XMLHTMLParserTokenizer >> nextCDataSection [
 	| closingBracketsRead nextChar |
 
 	self expectNextAll: '[CDATA['.
-	characterDataStream reset.
+	characterStream reset.
 	closingBracketsRead := 0.
 	[(nextChar := streamReader next) == nil
 		or: [closingBracketsRead = 2
@@ -2482,21 +2482,21 @@ XMLHTMLParserTokenizer >> nextCDataSection [
 			nextChar == $]
 				ifTrue: [
 					closingBracketsRead = 2
-						ifTrue: [characterDataStream nextPut: $]]
+						ifTrue: [characterStream nextPut: $]]
 						ifFalse: [closingBracketsRead := closingBracketsRead + 1]]
 				ifFalse: [
 					closingBracketsRead > 0
 						ifTrue: [
 							1 to: closingBracketsRead do: [:i |
-								characterDataStream nextPut: $]].
+								characterStream nextPut: $]].
 							closingBracketsRead := 0].
-					characterDataStream nextPut: nextChar]].
-	driver handleCData: characterDataStream contents.
+					characterStream nextPut: nextChar]].
+	driver handleCData: characterStream contents.
 ]
 
 { #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextCharacterReferenceOnCharacterDataStream [
-	"returns the character written to 'characterDataStream' or $& if
+XMLHTMLParserTokenizer >> nextCharacterReferenceOnCharacterStream [
+	"returns the character written to 'characterStream' or $& if
 	it wasn't replaced"
 	| reader character |
 
@@ -2516,10 +2516,10 @@ XMLHTMLParserTokenizer >> nextCharacterReferenceOnCharacterDataStream [
 		ifTrue: [
 			streamReader peek == $; "; is optional"
 				ifTrue: [streamReader next].
-			characterDataStream nextPut: character.
+			characterStream nextPut: character.
 			^ character]
 		ifFalse: [
-			characterDataStream
+			characterStream
 				nextPutAll: '&#';
 				nextPutAll: nameStream contents.
 			^ $&].
@@ -2533,7 +2533,7 @@ XMLHTMLParserTokenizer >> nextComment [
 	streamReader next.
 	self expectNext: $-.
 	hyphensRead := 0.
-	characterDataStream reset.
+	characterStream reset.
 	[(nextChar := streamReader next) == nil
 		or: [nextChar == $>
 			and: [hyphensRead = 2]]]
@@ -2541,16 +2541,16 @@ XMLHTMLParserTokenizer >> nextComment [
 			nextChar == $-
 				ifTrue: [
 					hyphensRead = 2
-						ifTrue: [characterDataStream nextPut: $-]
+						ifTrue: [characterStream nextPut: $-]
 						ifFalse: [hyphensRead := hyphensRead + 1]]
 				ifFalse: [
 					hyphensRead > 0
 						ifTrue: [
 							1 to: hyphensRead do: [:i |
-								characterDataStream nextPut: $-].
+								characterStream nextPut: $-].
 							hyphensRead := 0].
-					characterDataStream nextPut: nextChar]].
-	driver handleComment: characterDataStream contents.
+					characterStream nextPut: nextChar]].
+	driver handleComment: characterStream contents.
 ]
 
 { #category : #tokenizing }
@@ -2592,6 +2592,19 @@ XMLHTMLParserTokenizer >> nextDoctypeDeclarationOrCommentOrCDataSection [
 ]
 
 { #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextElementName [
+	| nextChar |
+
+	nameStream reset.
+	 [(nextChar := streamReader peek) == nil
+		or: [(HTMLNameDelimiters includes: nextChar)
+			or: [(context isDoctypeDeclarationContext and: [nextChar == $[])
+				or: [context isInternalSubsetContext and: [nextChar == $]]]]]]
+		whileFalse: [nameStream nextPut: streamReader next].
+	^ nameStream contents.
+]
+
+{ #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextEndDocument [
 	(context isContentContext
 		and: [elementNester hasOpenElements])
@@ -2607,7 +2620,7 @@ XMLHTMLParserTokenizer >> nextEndTag [
 
 	"Skip /"
 	streamReader next.
-	tagName := self nextName asLowercase.
+	tagName := self nextElementName asLowercase.
 	streamReader skipSeparators.
 	self expectTerminator.
 
@@ -2623,27 +2636,26 @@ XMLHTMLParserTokenizer >> nextEndTag [
 ]
 
 { #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextGeneralEntityOrCharacterReferenceOnCharacterDataStream [
-	"returns the (first) character written to 'characterDataStream' if
-	any, nil otherwise"
+XMLHTMLParserTokenizer >> nextGeneralEntityOrCharacterReferenceOnCharacterStream [
+	"returns the character written to 'characterStream' if any, nil otherwise"
 	streamReader peek == $#
-		ifTrue: [^ self nextCharacterReferenceOnCharacterDataStream]
+		ifTrue: [^ self nextCharacterReferenceOnCharacterStream]
 		ifFalse: [
 			"nil understands isXMLSeparator so no nil test is needed"
 			streamReader peek isXMLSeparator
 				ifTrue: [
-					characterDataStream nextPut: $&.
+					characterStream nextPut: $&.
 					^ $&].
-			^ self nextGeneralEntityReferenceOnCharacterDataStream]
+			^ self nextGeneralEntityReferenceOnCharacterStream]
 ]
 
 { #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextGeneralEntityReferenceOnCharacterDataStream [
-	"returns the (first) character written to 'characterDataStream' if
-	any, nil otherwise"
+XMLHTMLParserTokenizer >> nextGeneralEntityReferenceOnCharacterStream [
+	"returns the (first) character written to 'characterStream' if any,
+	nil otherwise"
 	| name |
 
-	name := self nextName.
+	name := self nextElementName.
 	driver replacesContentEntityReferences
 		ifTrue: [
 			PredefinedHTMLEntities
@@ -2651,25 +2663,12 @@ XMLHTMLParserTokenizer >> nextGeneralEntityReferenceOnCharacterDataStream [
 				ifPresent: [:character |
 					streamReader peek == $; "; is optional"
 						ifTrue: [streamReader next].
-					characterDataStream nextPut: character.
+					characterStream nextPut: character.
 					^ character]].
-	characterDataStream
+	characterStream
 		nextPut: $&;
 		nextPutAll: name.
 	^ $&.
-]
-
-{ #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextName [
-	| nextChar |
-
-	nameStream reset.
-	 [(nextChar := streamReader peek) == nil
-		or: [(HTMLNameDelimiters includes: nextChar)
-			or: [(context isDoctypeDeclarationContext and: [nextChar == $[])
-				or: [context isInternalSubsetContext and: [nextChar == $]]]]]]
-		whileFalse: [nameStream nextPut: streamReader next].
-	^ nameStream contents.
 ]
 
 { #category : #tokenizing }
@@ -2681,7 +2680,7 @@ XMLHTMLParserTokenizer >> nextNonElementWhitespace [
 XMLHTMLParserTokenizer >> nextNonHTMLCodeSectionToken [
 	| isInComment nextChar commentStartChar |
 
-	characterDataStream reset.
+	characterStream reset.
 	isInComment := false.
 	[streamReader atEnd
 		or: [self atEndTag: nonHTMLElement]]
@@ -2697,37 +2696,37 @@ XMLHTMLParserTokenizer >> nextNonHTMLCodeSectionToken [
 						ifTrue: [
 							commentStartChar == $*
 								ifTrue: [
-									characterDataStream nextPut: $*.
+									characterStream nextPut: $*.
 									nextChar := streamReader next].
 							isInComment := false].
-					characterDataStream nextPut: nextChar]
+					characterStream nextPut: nextChar]
 				ifFalse: [
 					streamReader atQuote
-						ifTrue: [self nextQuotedStringOnCharacterDataStream]
+						ifTrue: [self nextQuotedStringOnCharacterStream]
 						ifFalse: [
 							(((nextChar := streamReader next) == $/)
 								and: [streamReader peek == $*
 									or: [streamReader peek == $/]])
 								ifTrue: [
 									isInComment := true.
-									characterDataStream
+									characterStream
 										nextPut: $/;
 										nextPut: (commentStartChar := streamReader next)]
-								ifFalse: [characterDataStream nextPut: nextChar]]]].
+								ifFalse: [characterStream nextPut: nextChar]]]].
 	context := context contentContext.
 
-	driver handlePCData: characterDataStream contents.
+	driver handlePCData: characterStream contents.
 ]
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextNonHTMLSectionToken [
-	characterDataStream reset.
+	characterStream reset.
 	[streamReader atEnd
 		or: [self atEndTag: nonHTMLElement]]
-		whileFalse: [characterDataStream nextPut: streamReader next].
+		whileFalse: [characterStream nextPut: streamReader next].
 	context := context contentContext.
 
-	driver handlePCData: characterDataStream contents.
+	driver handlePCData: characterStream contents.
 ]
 
 { #category : #tokenizing }
@@ -2750,50 +2749,50 @@ XMLHTMLParserTokenizer >> nextPCDataToken [
 	| isWhitespace nextChar |
 
 	isWhitespace := true.
-	characterDataStream reset.
+	characterStream reset.
 	[(nextChar := streamReader peek) == $<
 		or: [nextChar == nil]]
 		whileFalse: [
 			streamReader next == $&
 				ifTrue: [
-					self nextGeneralEntityOrCharacterReferenceOnCharacterDataStream
+					self nextGeneralEntityOrCharacterReferenceOnCharacterStream
 						ifNotNil: [:writtenChar |
 							isWhitespace
 								ifTrue: [isWhitespace := writtenChar isXMLSeparator]]]
 				ifFalse: [
 					isWhitespace
 						ifTrue: [isWhitespace := nextChar isXMLSeparator].
-					characterDataStream nextPut: nextChar]].
+					characterStream nextPut: nextChar]].
 	isWhitespace
 		ifTrue: [
 			(elementNester isInElement
-				and: [characterDataStream position > 0])
-				ifTrue: [driver handleWhitespace: characterDataStream contents]]
+				and: [characterStream position > 0])
+				ifTrue: [driver handleWhitespace: characterStream contents]]
 		ifFalse: [
 			elementNester
 				beforePCDataElementsToEndDo: [:each | self endElement: each]
 				elementsToStartDo: [:each | self startElement: each].
-			driver handlePCData: characterDataStream contents].
+			driver handlePCData: characterStream contents].
 ]
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextPIData [
 	| nextChar |
 
-	characterDataStream reset.
+	characterStream reset.
 	[(nextChar := streamReader next) == nil
 		or: [nextChar == $?
 			and: [streamReader peek == $>]]]
-		whileFalse: [characterDataStream nextPut: nextChar].
+		whileFalse: [characterStream nextPut: nextChar].
 	self expectTerminator.
-	^ characterDataStream contents.
+	^ characterStream contents.
 ]
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextPITarget [
 	| target |
 
-	((target := self nextName) = 'xml'
+	((target := self nextElementName) = 'xml'
 		and: [context isXMLDeclarationContext])
 		ifTrue: [^ nil]
 		ifFalse: [^ target]
@@ -2802,7 +2801,7 @@ XMLHTMLParserTokenizer >> nextPITarget [
 { #category : #'tokenizing - dtd' }
 XMLHTMLParserTokenizer >> nextParameterEntityReference [
 	self
-		nextName;
+		nextElementName;
 		expectNext: $;
 ]
 
@@ -2824,31 +2823,16 @@ XMLHTMLParserTokenizer >> nextPrologToken [
 
 { #category : #'tokenizing - dtd' }
 XMLHTMLParserTokenizer >> nextPublicIDLiteral [
-	^ self nextQuotedDeclarationValue
+	^ self nextQuotedStringValue
 ]
 
 { #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextQuotedDeclarationValue [
-	| quote nextChar |
-
-	streamReader atQuote
-		ifFalse: [^ self nextName].
-
-	quote := streamReader next.
-	declarationStream reset.
-	[(nextChar := streamReader next) == quote
-		or: [nextChar == nil]]
-		whileFalse: [declarationStream nextPut: nextChar].
-	^ declarationStream contents.
-]
-
-{ #category : #tokenizing }
-XMLHTMLParserTokenizer >> nextQuotedStringOnCharacterDataStream [
+XMLHTMLParserTokenizer >> nextQuotedStringOnCharacterStream [
 	| isEscaped quote nextChar |
 
 	isEscaped := false.
 	quote := streamReader next.
-	characterDataStream nextPut: quote.
+	characterStream nextPut: quote.
 	[streamReader atEnd
 		or: [(nextChar := streamReader peek) == quote
 			and: [isEscaped not]]]
@@ -2856,9 +2840,24 @@ XMLHTMLParserTokenizer >> nextQuotedStringOnCharacterDataStream [
 			isEscaped :=
 				nextChar == $\
 					and: [isEscaped not].
-			characterDataStream nextPut: streamReader next].
+			characterStream nextPut: streamReader next].
 	streamReader next.
-	characterDataStream nextPut: quote.
+	characterStream nextPut: quote.
+]
+
+{ #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextQuotedStringValue [
+	| quote nextChar |
+
+	streamReader atQuote
+		ifFalse: [^ self nextElementName].
+
+	quote := streamReader next.
+	characterStream reset.
+	[(nextChar := streamReader next) == quote
+		or: [nextChar == nil]]
+		whileFalse: [characterStream nextPut: nextChar].
+	^ characterStream contents.
 ]
 
 { #category : #tokenizing }
@@ -2885,29 +2884,29 @@ XMLHTMLParserTokenizer >> nextSubsetMarkupToken [
 
 { #category : #'tokenizing - dtd' }
 XMLHTMLParserTokenizer >> nextSystemIDLiteral [
-	^ self nextQuotedDeclarationValue
+	^ self nextQuotedStringValue
 ]
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextTag [
 	| tagName attributes attributeName nextChar |
 
-	(streamReader peek == $/)
+	streamReader peek == $/
 		ifTrue: [^ self nextEndTag].
-	tagName := self nextName asLowercase.
+	tagName := self nextElementName asLowercase.
 
-	attributes := OrderPreservingStringDictionary new: 10.
 	[streamReader skipSeparators.
 	((nextChar := streamReader peek) == $>
 		or: [nextChar == $/
 			or: [nextChar == nil
-				or: [(attributeName := self nextName asLowercase) size = 0]]])]
+				or: [(attributeName := self nextElementName asLowercase) size = 0]]])]
 		whileFalse: [
 			streamReader skipSeparators.
 			(streamReader peek == $=)
 				ifTrue: [streamReader next].
 			streamReader skipSeparators.
-			attributes
+			(attributes
+				ifNil: [attributes := OrderPreservingStringDictionary new: 10])
 				at: attributeName
 				put: self nextAttributeValue].
 	(elementNester isRedundantStartTag: tagName)
@@ -2916,8 +2915,11 @@ XMLHTMLParserTokenizer >> nextTag [
 				ifTrue: [streamReader next].
 			self expectTerminator.
 			^ self].
-	tagName = 'meta'
-		ifTrue: [self checkForCharsetInMetaAttributes: attributes].
+	attributes
+		ifNil: [attributes := LazyOrderPreservingStringDictionary new]
+		ifNotNil: [
+			tagName = 'meta'
+				ifTrue: [self checkForCharsetInMetaAttributes: attributes]].
 
 	elementNester
 		beforeStarting: tagName
@@ -2941,18 +2943,33 @@ XMLHTMLParserTokenizer >> nextTag [
 ]
 
 { #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextXMLAttributeValue [
+	| quote nextChar |
+
+	streamReader atQuote
+		ifFalse: [^ self nextElementName].
+
+	quote := streamReader next.
+	xmlDeclarationStream reset.
+	[(nextChar := streamReader next) == quote
+		or: [nextChar == nil]]
+		whileFalse: [xmlDeclarationStream nextPut: nextChar].
+	^ xmlDeclarationStream contents.
+]
+
+{ #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextXMLEncodingAttributeValue [
-	^ self nextQuotedDeclarationValue
+	^ self nextXMLAttributeValue
 ]
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextXMLStandaloneAttributeValue [
-	^ self nextQuotedDeclarationValue
+	^ self nextXMLAttributeValue
 ]
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextXMLVersionAttributeValue [
-	^ self nextQuotedDeclarationValue
+	^ self nextXMLAttributeValue
 ]
 
 { #category : #'tokenizing - dtd' }
@@ -2982,7 +2999,7 @@ XMLHTMLParserTokenizer >> skipNonDeclarationOrEntity [
 XMLHTMLParserTokenizer >> startElement: anElement [
 	self
 		startElement: anElement
-		attributes: (OrderPreservingStringDictionary new: 0)
+		attributes: LazyOrderPreservingStringDictionary new
 ]
 
 { #category : #private }
