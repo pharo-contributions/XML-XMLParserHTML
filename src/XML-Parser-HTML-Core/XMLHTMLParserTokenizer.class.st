@@ -2723,7 +2723,10 @@ XMLHTMLParserTokenizer >> nextNonHTMLSectionToken [
 	characterStream reset.
 	[streamReader atEnd
 		or: [self atEndTag: nonHTMLElement]]
-		whileFalse: [characterStream nextPut: streamReader next].
+		whileFalse: [| nextChar |
+			(nextChar := streamReader next) == $&
+				ifTrue: [self nextGeneralEntityOrCharacterReferenceOnCharacterStream]
+				ifFalse: [characterStream nextPut: nextChar]].
 	context := context contentContext.
 
 	driver handlePCData: characterStream contents.
