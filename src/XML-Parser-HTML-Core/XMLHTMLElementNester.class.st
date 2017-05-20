@@ -175,7 +175,7 @@ XMLHTMLElementNester class >> voidElements [
 		'source' 'track' 'wbr')
 ]
 
-{ #category : #checking }
+{ #category : #nesting }
 XMLHTMLElementNester >> beforeEnding: anElement elementsToEndDo: anElementEndingBlock [
 	self openElementsReverseDo: [:each |
 		each = anElement
@@ -183,7 +183,7 @@ XMLHTMLElementNester >> beforeEnding: anElement elementsToEndDo: anElementEnding
 		anElementEndingBlock value: each].
 ]
 
-{ #category : #checking }
+{ #category : #nesting }
 XMLHTMLElementNester >> beforePCDataElementsToEndDo: anElementEndingBlock elementsToStartDo: anElementStartingBlock [
 	(self startedHeadSection
 		and: [self startedBodySection not])
@@ -197,7 +197,7 @@ XMLHTMLElementNester >> beforePCDataElementsToEndDo: anElementEndingBlock elemen
 		ifFalse: [anElementStartingBlock value: 'body'].
 ]
 
-{ #category : #checking }
+{ #category : #nesting }
 XMLHTMLElementNester >> beforeStarting: anElement elementsToEndDo: anElementEndingBlock elementsToStartDo: anElementStartingBlock [
 	| htmlTagInfo |
 
@@ -273,7 +273,7 @@ XMLHTMLElementNester >> elementsToStartBeforeStartTag: anHTMLTagInfo do: anEleme
 				ifTrue: [anElementStartingBlock value: 'body']].
 ]
 
-{ #category : #checking }
+{ #category : #nesting }
 XMLHTMLElementNester >> endElement: anElement [
 	| association |
 
@@ -283,7 +283,7 @@ XMLHTMLElementNester >> endElement: anElement [
 			ifAbsent: [self openElementsByName add: (anElement -> 1)].
 	association value: (association value - 1 max: 0).
 
-	super endElement: anElement.
+	self endCurrentElement.
 ]
 
 { #category : #testing }
@@ -352,7 +352,7 @@ XMLHTMLElementNester >> openElementsByName [
 	^ openElementsByName
 ]
 
-{ #category : #checking }
+{ #category : #nesting }
 XMLHTMLElementNester >> startElement: anElement [
 	| association |
 
