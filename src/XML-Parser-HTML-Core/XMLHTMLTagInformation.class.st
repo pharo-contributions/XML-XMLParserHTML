@@ -19,6 +19,11 @@ Class {
 }
 
 { #category : #'instance creation' }
+XMLHTMLTagInformation class >> name: aName [
+	^ self named: aName
+]
+
+{ #category : #'instance creation' }
 XMLHTMLTagInformation class >> named: aName [
 	^ self new name: aName
 ]
