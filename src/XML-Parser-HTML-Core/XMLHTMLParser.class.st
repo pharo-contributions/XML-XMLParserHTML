@@ -9,7 +9,7 @@ Class {
 	#category : #'XML-Parser-HTML-Core'
 }
 
-{ #category : #private }
+{ #category : #defaults }
 XMLHTMLParser >> driverClass [
 	^ SAXHTMLParserDriver
 ]
@@ -24,9 +24,10 @@ XMLHTMLParser >> endElement: aQualifiedName prefix: aPrefix uri: aURI localName:
 ]
 
 { #category : #private }
-XMLHTMLParser >> pushInnerXMLRootNode: aRootNode [
-	aRootNode ancestorNodes reverseDo: [:each | self pushNode: each].
-	super pushInnerXMLRootNode: aRootNode.
+XMLHTMLParser >> innerXMLRootNode: aRootNode [
+	aRootNode ancestorNodes reverseDo: [:each |
+		self pushNode: each].
+	super innerXMLRootNode: aRootNode.
 ]
 
 { #category : #private }

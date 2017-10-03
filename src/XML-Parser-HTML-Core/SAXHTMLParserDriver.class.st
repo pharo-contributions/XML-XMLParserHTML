@@ -34,7 +34,7 @@ SAXHTMLParserDriver >> deferEventSelector: aSelector arguments: anArgumentArray 
 			arguments: anArgumentArray)
 ]
 
-{ #category : #private }
+{ #category : #defaults }
 SAXHTMLParserDriver >> elementNesterClass [
 	^ XMLHTMLElementNester
 ]
@@ -128,7 +128,7 @@ SAXHTMLParserDriver >> handleStartDTD: aRoot publicID: aPublicID systemID: aSyst
 ]
 
 { #category : #handling }
-SAXHTMLParserDriver >> handleStartTag: anElement attributes: aDictionary [
+SAXHTMLParserDriver >> handleStartTag: anElement attributes: anAttributeDictionary [
 	| prefix localName |
 
 	prefix := anElement xmlPrefixBeforeLocalName.
@@ -140,7 +140,7 @@ SAXHTMLParserDriver >> handleStartTag: anElement attributes: aDictionary [
 		prefix: prefix
 		uri: ''
 		localName: localName
-		attributes: aDictionary.
+		attributes: anAttributeDictionary.
 ]
 
 { #category : #handling }
@@ -194,11 +194,12 @@ SAXHTMLParserDriver >> processNonTerminatingDeferredEvents [
 { #category : #initialization }
 SAXHTMLParserDriver >> setSAXHandler: aSAXHandler [
 	super setSAXHandler: aSAXHandler.
+
 	isDeferringEvents := false.
 	deferredEvents := OrderedCollection new: 5.
 ]
 
-{ #category : #private }
+{ #category : #defaults }
 SAXHTMLParserDriver >> tokenizerClass [
 	^ XMLHTMLParserTokenizer
 ]

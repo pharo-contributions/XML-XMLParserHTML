@@ -1,5 +1,5 @@
 "
-This class is a SAXHandler for messy HTML.
+This class is a SAXHandler for messy HTML. The DOM-basesd XMLHTMLParser should probably be preferred.
 "
 Class {
 	#name : #SAXHTMLHandler,
@@ -7,7 +7,7 @@ Class {
 	#category : #'XML-Parser-HTML-Core'
 }
 
-{ #category : #private }
+{ #category : #defaults }
 SAXHTMLHandler >> driverClass [
 	^ SAXHTMLParserDriver
 ]

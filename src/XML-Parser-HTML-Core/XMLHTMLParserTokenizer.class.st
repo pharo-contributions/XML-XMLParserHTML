@@ -80,7 +80,9 @@ XMLHTMLParserTokenizer class >> initializeHTMLNameDelimiters [
 	conditions when reinitializing the class"
 	HTMLNameDelimiters :=
 		BitmapCharacterSet new
-			addAll: Character xmlSeparators;
+			"#xmlWhitespace is used instead of #xmlSeparators,
+			which is a narrower range of chars specific to XML"
+			addAll: Character xmlWhitespace;
 			add: $>;
 			add: $/;
 			add: $<;
@@ -2400,18 +2402,15 @@ XMLHTMLParserTokenizer >> atEndTag: aTagName [
 ]
 
 { #category : #decoding }
-XMLHTMLParserTokenizer >> checkForCharsetInMetaAttributes: anAttributeDictionary [
-	anAttributeDictionary
-		at: 'charset'
-		ifPresent: [:charset | ^ self convertFromEncoding: charset].
+XMLHTMLParserTokenizer >> convertFromEncoding: anEncodingName [
+	| encodingNameWithoutWhitespace |
 
-	(anAttributeDictionary at: 'http-equiv') = 'Content-Type'
-		ifTrue: [
-			anAttributeDictionary
-				at: 'content'
-				ifPresent: [:content |
-					((content copyAfter: $=) reject: [:each | each isXMLSeparator])
-						ifNotEmpty: [:charset | self convertFromEncoding: charset]]].
+	(encodingNameWithoutWhitespace :=
+		anEncodingName reject: [:each |
+			"use #isXMLWhitespace instead of the narrower, XML-specific
+			#isXMLSeparator"
+			each isXMLWhitespace]) isEmpty
+		ifFalse: [super convertFromEncoding: encodingNameWithoutWhitespace]
 ]
 
 { #category : #private }
@@ -2423,7 +2422,8 @@ XMLHTMLParserTokenizer >> endElement: anElement [
 
 { #category : #'tokenizing - expecting' }
 XMLHTMLParserTokenizer >> expectNext: aCharacter [
-	(streamReader peek == aCharacter)
+	"use #= for pre-SpurVM compatibility where wide chars aren't #=="
+	streamReader peek = aCharacter
 		ifTrue: [streamReader next].
 	^ aCharacter.
 ]
@@ -2431,7 +2431,8 @@ XMLHTMLParserTokenizer >> expectNext: aCharacter [
 { #category : #'tokenizing - expecting' }
 XMLHTMLParserTokenizer >> expectNextAll: aString [
 	aString do: [:each |
-		streamReader peek == each
+		"use #= for pre-SpurVM compatibility where wide chars aren't #=="
+		streamReader peek = each
 			ifTrue: [streamReader next]
 			ifFalse: [
 				self nextElementName.
@@ -2498,19 +2499,14 @@ XMLHTMLParserTokenizer >> nextCDataSection [
 XMLHTMLParserTokenizer >> nextCharacterReferenceOnCharacterStream [
 	"returns the character written to 'characterStream' or $& if
 	it wasn't replaced"
-	| reader character |
+	| character |
 
 	"skip $#"
 	streamReader next.
 	nameStream reset.
-	(reader := XMLIntegerReader on: streamReader)
-		printStream: nameStream.
 	character :=
 		self characterFromCodePoint:
-			(reader
-				nextIntegerWithBase: 16
-				startingWithAny: 'Xx'
-				orBase: 10).
+			(streamReader nextIntegerPrintedOn: nameStream).
 	(character notNil
 		and: [driver replacesContentEntityReferences])
 		ifTrue: [
@@ -2555,8 +2551,10 @@ XMLHTMLParserTokenizer >> nextComment [
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextContentMarkupToken [
-	"nil understands isXMLSeparator so no nil test is needed"
-	streamReader peek isXMLSeparator
+	"use #isXMLWhitespace instead of the narrower, XML-specific
+	#isXMLSeparator, and since nil understands #isXMLWhitespace
+	no nil test is needed"
+	streamReader peek isXMLWhitespace
 		ifTrue: [
 			streamReader pushBack: '&lt;'.
 			^ self nextPCDataToken].
@@ -2598,8 +2596,11 @@ XMLHTMLParserTokenizer >> nextElementName [
 	nameStream reset.
 	 [(nextChar := streamReader peek) == nil
 		or: [(HTMLNameDelimiters includes: nextChar)
-			or: [(context isDoctypeDeclarationContext and: [nextChar == $[])
-				or: [context isInternalSubsetContext and: [nextChar == $]]]]]]
+			or: [
+				(context isDoctypeDeclarationContext
+					and: [nextChar == $[])
+					or: [context isInternalSubsetContext
+						and: [nextChar == $]]]]]]
 		whileFalse: [nameStream nextPut: streamReader next].
 	^ nameStream contents.
 ]
@@ -2641,8 +2642,10 @@ XMLHTMLParserTokenizer >> nextGeneralEntityOrCharacterReferenceOnCharacterStream
 	streamReader peek == $#
 		ifTrue: [^ self nextCharacterReferenceOnCharacterStream]
 		ifFalse: [
-			"nil understands isXMLSeparator so no nil test is needed"
-			streamReader peek isXMLSeparator
+			"use #isXMLWhitespace instead of the narrower, XML-specific
+			#isXMLSeparator, and since nil understands #isXMLWhitespace
+			no nil test is needed"
+			streamReader peek isXMLWhitespace
 				ifTrue: [
 					characterStream nextPut: $&.
 					^ $&].
@@ -2738,8 +2741,10 @@ XMLHTMLParserTokenizer >> nextNonPIPrologOrContentMarkupToken [
 		ifTrue: [^ self nextDoctypeDeclarationOrCommentOrCDataSection].
 
 	self nextStartContent.
-	"nil understands isXMLSeparator so no nil test is needed"
-	streamReader peek isXMLSeparator
+	"use #isXMLWhitespace instead of the narrower, XML-specific
+	#isXMLSeparator, and since nil understands #isXMLWhitespace
+	no nil test is needed"
+	streamReader peek isXMLWhitespace
 		ifFalse: [^ self nextTag].
 
 	"an unescaped < in pcdata content"
@@ -2761,10 +2766,13 @@ XMLHTMLParserTokenizer >> nextPCDataToken [
 					self nextGeneralEntityOrCharacterReferenceOnCharacterStream
 						ifNotNil: [:writtenChar |
 							isWhitespace
-								ifTrue: [isWhitespace := writtenChar isXMLSeparator]]]
+								ifTrue: [
+									"use #isXMLWhitespace instead of the
+									narrower, XML-specific #isXMLSeparator"
+									isWhitespace := writtenChar isXMLWhitespace]]]
 				ifFalse: [
 					isWhitespace
-						ifTrue: [isWhitespace := nextChar isXMLSeparator].
+						ifTrue: [isWhitespace := nextChar isXMLWhitespace].
 					characterStream nextPut: nextChar]].
 	isWhitespace
 		ifTrue: [
@@ -2909,7 +2917,7 @@ XMLHTMLParserTokenizer >> nextTag [
 				ifTrue: [streamReader next].
 			streamReader skipSeparators.
 			(attributes
-				ifNil: [attributes := OrderPreservingStringDictionary new: 10])
+				ifNil: [attributes := driver newAttributeDictionary])
 				at: attributeName
 				put: self nextAttributeValue].
 	(elementNester isRedundantStartTag: tagName)
@@ -2919,10 +2927,10 @@ XMLHTMLParserTokenizer >> nextTag [
 			self expectTerminator.
 			^ self].
 	attributes
-		ifNil: [attributes := LazyOrderPreservingStringDictionary new]
+		ifNil: [attributes := driver newEmptyAttributeDictionary]
 		ifNotNil: [
 			tagName = 'meta'
-				ifTrue: [self checkForCharsetInMetaAttributes: attributes]].
+				ifTrue: [self processMetaAttributes: attributes]].
 
 	elementNester
 		beforeStarting: tagName
@@ -2975,6 +2983,24 @@ XMLHTMLParserTokenizer >> nextXMLVersionAttributeValue [
 	^ self nextXMLAttributeValue
 ]
 
+{ #category : #decoding }
+XMLHTMLParserTokenizer >> processMetaAttributes: anAttributeDictionary [
+	"check for a basic meta charset first, like <meta charset='UTF-8'>"
+	self convertFromEncoding:
+		(anAttributeDictionary
+			at: 'charset'
+			ifAbsent: [
+				"otherwise look for an http-equiv content type, like:
+					<meta
+						http-equiv='Content-Type'
+						content='text/html; charset=UTF-8'>"
+				(anAttributeDictionary at: 'http-equiv') asLowercase = 'content-type'
+					ifFalse: [^ self].
+				(anAttributeDictionary
+					at: 'content'
+					ifAbsent: [^ self]) copyAfter: $=])
+]
+
 { #category : #'tokenizing - dtd' }
 XMLHTMLParserTokenizer >> skipDeclaration [
 	[streamReader atEnd
@@ -2991,10 +3017,11 @@ XMLHTMLParserTokenizer >> skipDeclaration [
 { #category : #'tokenizing - dtd' }
 XMLHTMLParserTokenizer >> skipNonDeclarationOrEntity [
 	[streamReader atEnd
-		or: [(streamReader peek == $<)
-			or: [(streamReader peek == $%)
-				or: [context isInternalSubsetContext and: [streamReader peek ==$]]]]]]
-		whileFalse: [streamReader next].
+		or: [streamReader peek == $<
+			or: [streamReader peek == $%
+				or: [context isInternalSubsetContext
+					and: [streamReader peek == $]]]]]]
+		whileFalse: [streamReader next]
 	
 ]
 
@@ -3002,13 +3029,18 @@ XMLHTMLParserTokenizer >> skipNonDeclarationOrEntity [
 XMLHTMLParserTokenizer >> startElement: anElement [
 	self
 		startElement: anElement
-		attributes: LazyOrderPreservingStringDictionary new
+		attributes: driver newEmptyAttributeDictionary
 ]
 
 { #category : #private }
-XMLHTMLParserTokenizer >> startElement: anElement attributes: aDictionary [
+XMLHTMLParserTokenizer >> startElement: anElement attributes: anAttributeDictionary [
 	elementNester startElement: anElement.
 	driver
 		handleStartTag: anElement
-		attributes: aDictionary.
+		attributes: anAttributeDictionary.
+]
+
+{ #category : #defaults }
+XMLHTMLParserTokenizer >> streamReaderClass [
+	^ XMLHTMLNestedStreamReader
 ]
