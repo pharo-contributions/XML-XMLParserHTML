@@ -2584,7 +2584,7 @@ XMLHTMLParserTokenizer >> nextDoctypeDeclarationOrCommentOrCDataSection [
 			^ self
 				nextStartContent;
 				nextCDataSection].
-	context isPostDoctypeDeclarationContext
+	state isPostDoctypeDeclarationState
 		ifTrue: [^ self skipDeclaration].
 	self nextDoctypeDeclaration.
 ]
@@ -2597,9 +2597,9 @@ XMLHTMLParserTokenizer >> nextElementName [
 	 [(nextChar := streamReader peek) == nil
 		or: [(HTMLNameDelimiters includes: nextChar)
 			or: [
-				(context isDoctypeDeclarationContext
+				(state isDoctypeDeclarationState
 					and: [nextChar == $[])
-					or: [context isInternalSubsetContext
+					or: [state isInternalSubsetState
 						and: [nextChar == $]]]]]]
 		whileFalse: [nameStream nextPut: streamReader next].
 	^ nameStream contents.
@@ -2607,7 +2607,7 @@ XMLHTMLParserTokenizer >> nextElementName [
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextEndDocument [
-	(context isContentContext
+	(state isContentState
 		and: [elementNester hasOpenElements])
 		ifTrue: [
 			elementNester openElementsReverseDo: [:each |
@@ -2716,7 +2716,7 @@ XMLHTMLParserTokenizer >> nextNonHTMLCodeSectionToken [
 										nextPut: $/;
 										nextPut: (commentStartChar := streamReader next)]
 								ifFalse: [characterStream nextPut: nextChar]]]].
-	context := context contentContext.
+	state := state contentState.
 
 	driver handlePCData: characterStream contents.
 ]
@@ -2730,7 +2730,7 @@ XMLHTMLParserTokenizer >> nextNonHTMLSectionToken [
 			(nextChar := streamReader next) == $&
 				ifTrue: [self nextGeneralEntityOrCharacterReferenceOnCharacterStream]
 				ifFalse: [characterStream nextPut: nextChar]].
-	context := context contentContext.
+	state := state contentState.
 
 	driver handlePCData: characterStream contents.
 ]
@@ -2804,7 +2804,7 @@ XMLHTMLParserTokenizer >> nextPITarget [
 	| target |
 
 	((target := self nextElementName) = 'xml'
-		and: [context isXMLDeclarationContext])
+		and: [state isXMLDeclarationState])
 		ifTrue: [^ nil]
 		ifFalse: [^ target]
 ]
@@ -2873,10 +2873,10 @@ XMLHTMLParserTokenizer >> nextQuotedStringValue [
 
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextStartNonHTMLElement: anElement [
-	context := 
+	state := 
 		(NonHTMLCodeSectionTags includes: anElement)
-			ifTrue: [XMLHTMLNonHTMLCodeSectionContext new]
-			ifFalse: [XMLHTMLNonHTMLSectionContext new].
+			ifTrue: [XMLHTMLNonHTMLCodeSectionState new]
+			ifFalse: [XMLHTMLNonHTMLSectionState new].
 	nonHTMLElement := anElement.
 ]
 
@@ -3019,7 +3019,7 @@ XMLHTMLParserTokenizer >> skipNonDeclarationOrEntity [
 	[streamReader atEnd
 		or: [streamReader peek == $<
 			or: [streamReader peek == $%
-				or: [context isInternalSubsetContext
+				or: [state isInternalSubsetState
 					and: [streamReader peek == $]]]]]]
 		whileFalse: [streamReader next]
 	
