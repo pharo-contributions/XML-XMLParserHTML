@@ -2996,9 +2996,10 @@ XMLHTMLParserTokenizer >> processMetaAttributes: anAttributeDictionary [
 						content='text/html; charset=UTF-8'>"
 				(anAttributeDictionary at: 'http-equiv') asLowercase = 'content-type'
 					ifFalse: [^ self].
-				(anAttributeDictionary
-					at: 'content'
-					ifAbsent: [^ self]) copyAfter: $=])
+				XMLHTTPResponse charsetFromContentType:
+					(anAttributeDictionary
+						at: 'content'
+						ifAbsent: [^ self])])
 ]
 
 { #category : #'tokenizing - dtd' }
