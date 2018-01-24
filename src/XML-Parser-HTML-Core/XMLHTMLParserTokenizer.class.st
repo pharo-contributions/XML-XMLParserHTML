@@ -117,7 +117,7 @@ XMLHTMLParserTokenizer class >> initializePredefinedHTMLEntities [
 				entityPage
 					skipTo: $[;
 					upTo: $=.
-			codePoint := XMLIntegerReader readFrom: entityPage.
+			codePoint := XMLSmallIntegerReader readFrom: entityPage.
 			(entityName notEmpty
 				and: [codePoint notNil])
 				ifTrue: [
@@ -2450,6 +2450,11 @@ XMLHTMLParserTokenizer >> expectTerminator [
 	streamReader skipTo: $>
 ]
 
+{ #category : #defaults }
+XMLHTMLParserTokenizer >> hexCharacterValueLiteralPrefixes [
+	^ 'xX'
+]
+
 { #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextAttributeValue [
 	| quote nextChar |
@@ -2506,7 +2511,7 @@ XMLHTMLParserTokenizer >> nextCharacterReferenceOnCharacterStream [
 	nameStream reset.
 	character :=
 		self characterFromCodePoint:
-			(streamReader nextIntegerPrintedOn: nameStream).
+			(self nextCharacterValueLiteralPrintedOn: nameStream).
 	(character notNil
 		and: [driver replacesContentEntityReferences])
 		ifTrue: [
@@ -2989,17 +2994,19 @@ XMLHTMLParserTokenizer >> processMetaAttributes: anAttributeDictionary [
 	self convertFromEncoding:
 		(anAttributeDictionary
 			at: 'charset'
-			ifAbsent: [
+			ifAbsent: [| mimeType |
 				"otherwise look for an http-equiv content type, like:
 					<meta
 						http-equiv='Content-Type'
 						content='text/html; charset=UTF-8'>"
 				(anAttributeDictionary at: 'http-equiv') asLowercase = 'content-type'
 					ifFalse: [^ self].
-				XMLHTTPResponse charsetFromContentType:
-					(anAttributeDictionary
-						at: 'content'
-						ifAbsent: [^ self])])
+				mimeType :=
+					XMLHTTPMIMEType fromString:
+						(anAttributeDictionary
+							at: 'content'
+							ifAbsent: [^ self]).
+				mimeType charset])
 ]
 
 { #category : #'tokenizing - dtd' }

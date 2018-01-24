@@ -7,11 +7,6 @@ Class {
 	#category : #'XML-Parser-HTML-Core-Drivers'
 }
 
-{ #category : #defaults }
-XMLHTMLNestedStreamReader >> hexIntegerPrefixes [
-	^ 'xX'
-]
-
 { #category : #positioning }
 XMLHTMLNestedStreamReader >> skipSeparators [
 	"Should be identical to the superclass #skipSeparators, except
