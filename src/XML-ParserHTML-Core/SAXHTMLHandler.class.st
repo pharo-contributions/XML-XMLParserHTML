@@ -4,7 +4,7 @@ This class is a SAXHandler for messy HTML. The DOM-basesd XMLHTMLParser should p
 Class {
 	#name : #SAXHTMLHandler,
 	#superclass : #SAXHandler,
-	#category : #'XML-ParserHTML-Core-XML-ParserHTML-Core'
+	#category : #'XML-ParserHTML-Core'
 }
 
 { #category : #defaults }

@@ -6,7 +6,7 @@ This class is a DOM parser that turns invalid and malformed HTML into a DOM tree
 Class {
 	#name : #XMLHTMLParser,
 	#superclass : #XMLDOMParser,
-	#category : #'XML-ParserHTML-Core-XML-ParserHTML-Core'
+	#category : #'XML-ParserHTML-Core'
 }
 
 { #category : #defaults }
