@@ -2405,11 +2405,8 @@ XMLHTMLParserTokenizer >> atEndTag: aTagName [
 XMLHTMLParserTokenizer >> convertFromEncoding: anEncodingName [
 	| encodingNameWithoutWhitespace |
 
-	(encodingNameWithoutWhitespace :=
-		anEncodingName reject: [:each |
-			"use #isXMLWhitespace instead of the narrower, XML-specific
-			#isXMLSeparator"
-			each isXMLWhitespace]) isEmpty
+	encodingNameWithoutWhitespace := anEncodingName xmlCopyWithoutWhitespace.
+	encodingNameWithoutWhitespace isEmpty
 		ifFalse: [super convertFromEncoding: encodingNameWithoutWhitespace]
 ]
 
