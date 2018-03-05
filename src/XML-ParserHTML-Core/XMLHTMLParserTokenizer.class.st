@@ -2437,16 +2437,6 @@ XMLHTMLParserTokenizer >> expectNextAll: aString [
 	^ aString.
 ]
 
-{ #category : #'tokenizing - expecting' }
-XMLHTMLParserTokenizer >> expectSeparators [
-	streamReader skipSeparators
-]
-
-{ #category : #'tokenizing - expecting' }
-XMLHTMLParserTokenizer >> expectTerminator [
-	streamReader skipTo: $>
-]
-
 { #category : #defaults }
 XMLHTMLParserTokenizer >> hexCharacterValueLiteralPrefixes [
 	^ 'xX'
@@ -2625,7 +2615,7 @@ XMLHTMLParserTokenizer >> nextEndTag [
 	streamReader next.
 	tagName := self nextElementName asLowercase.
 	streamReader skipSeparators.
-	self expectTerminator.
+	self nextMarkupTerminator.
 
 	(elementNester isRedundantEndTag: tagName)
 		ifTrue: [^ self].
@@ -2674,6 +2664,11 @@ XMLHTMLParserTokenizer >> nextGeneralEntityReferenceOnCharacterStream [
 		nextPut: $&;
 		nextPutAll: name.
 	^ $&.
+]
+
+{ #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextMarkupTerminator [
+	streamReader skipTo: $>
 ]
 
 { #category : #tokenizing }
@@ -2797,7 +2792,7 @@ XMLHTMLParserTokenizer >> nextPIData [
 		or: [nextChar == $?
 			and: [streamReader peek == $>]]]
 		whileFalse: [characterStream nextPut: nextChar].
-	self expectTerminator.
+	self nextMarkupTerminator.
 	^ characterStream contents.
 ]
 
@@ -2874,6 +2869,11 @@ XMLHTMLParserTokenizer >> nextQuotedStringValue [
 ]
 
 { #category : #tokenizing }
+XMLHTMLParserTokenizer >> nextSeparators [
+	streamReader skipSeparators
+]
+
+{ #category : #tokenizing }
 XMLHTMLParserTokenizer >> nextStartNonHTMLElement: anElement [
 	state := 
 		(NonHTMLCodeSectionTags includes: anElement)
@@ -2926,8 +2926,7 @@ XMLHTMLParserTokenizer >> nextTag [
 		ifTrue: [
 			nextChar == $/
 				ifTrue: [streamReader next].
-			self expectTerminator.
-			^ self].
+			^ self nextMarkupTerminator].
 	attributes
 		ifNil: [attributes := driver newEmptyAttributeDictionary]
 		ifNotNil: [
@@ -2952,7 +2951,7 @@ XMLHTMLParserTokenizer >> nextTag [
 				ifFalse: [
 					(NonHTMLSectionTags includes: tagName)
 						ifTrue: [self nextStartNonHTMLElement: tagName]]].
-	self expectTerminator.
+	self nextMarkupTerminator.
 ]
 
 { #category : #tokenizing }
