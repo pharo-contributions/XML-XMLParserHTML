@@ -9,5 +9,5 @@ Class {
 
 { #category : #tokenizing }
 XMLHTMLNonHTMLSectionState >> nextTokenFrom: aTokenizer [
-	aTokenizer nextNonHTMLSectionToken
+	^ aTokenizer nextNonHTMLSectionToken
 ]
