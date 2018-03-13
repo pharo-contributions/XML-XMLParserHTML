@@ -128,3 +128,13 @@ XMLHTMLTagInformation >> nestableTagGroup [
 XMLHTMLTagInformation >> nestableTagGroup: aNameCollection [
 	nestableTagGroup := aNameCollection
 ]
+
+{ #category : #printing }
+XMLHTMLTagInformation >> printOn: aStream [
+	super printOn: aStream.
+
+	aStream
+		nextPutAll: '(<';
+		nextPutAll: self name;
+		nextPutAll: '>)'.
+]
