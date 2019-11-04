@@ -1,5 +1,5 @@
 # XML-XMLParserHTML
-XMLParserHTML provides SAX and DOM parsers for HTML that convert possibly malformed HTML into well-formed XML.
+XMLParserHTML provides SAX and DOM parsers in [Pharo](http://www.pharo.org) for HTML that convert possibly malformed HTML into well-formed XML.
 
 ## Installation
 
