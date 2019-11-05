@@ -26,7 +26,7 @@ BaselineOfXMLParserHTML >> baselineOf: spec [
 			spec
 				group: 'Core' with: #('XML-ParserHTML-Core');
 				group: 'Tools' with: #('XMLParser Tools'); 
-				group: 'Tests' with: #('XML-Parser-Tests');	
+				group: 'Tests' with: #('XML-ParserHTML-Tests');	
 				group: 'all' with: #('Core' 'Tools' 'Tests');
 				group: 'default' with: #('all')	
 	]
