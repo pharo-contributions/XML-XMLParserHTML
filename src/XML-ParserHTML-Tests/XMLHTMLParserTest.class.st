@@ -1,3 +1,6 @@
+"
+Unit tests for XMLHTMLParser
+"
 Class {
 	#name : #XMLHTMLParserTest,
 	#superclass : #TestCase,
@@ -51,17 +54,17 @@ XMLHTMLParserTest >> testAttributes [
 			'<test one="quoted" two=''subQuoted'' three=unquoted four'.
 	element := document findElementNamed: 'test'.
 	self
-		assert: (element attributeAt: 'one') = 'quoted';
-		assert: (element attributeAt: 'two') = 'subQuoted';
-		assert: (element attributeAt: 'three') = 'unquoted';
-		assert: (element attributeAt: 'four') = ''.
+		assert: (element attributeAt: 'one') equals: 'quoted';
+		assert: (element attributeAt: 'two') equals: 'subQuoted';
+		assert: (element attributeAt: 'three') equals: 'unquoted';
+		assert: (element attributeAt: 'four') equals: ''
 ]
 
 { #category : #tests }
 XMLHTMLParserTest >> testCharacterReferences [
 	self assert:
 		(XMLHTMLParser parse: '&#60; &#x3c &#X3E &#62; &#62end &#x2Astar &#0; &#-1 &#inval; &#inval &#')
-			contentString = '< < > > >end *star &#0; &#-1 &#inval; &#inval &#'.
+			contentString equals: '< < > > >end *star &#0; &#-1 &#inval; &#inval &#'
 ]
 
 { #category : #tests }
@@ -69,7 +72,7 @@ XMLHTMLParserTest >> testCharacterReferencesUnreplaced [
 	self assert:
 		((XMLHTMLParser on: '&#60; &#x3c &#X3E &#62; &#62end &#x2Astar &#0; &#-1 &#inval; &#inval &#')
 			replacesContentEntityReferences: false;
-			parseDocument) contentString =
+			parseDocument) contentString equals:
 				'&#60; &#x3c &#X3E &#62; &#62end &#x2Astar &#0; &#-1 &#inval; &#inval &#'
 ]
 
@@ -80,7 +83,7 @@ XMLHTMLParserTest >> testElementMixedContent [
 	xml := '<mixed-content> one <two/> <three/> four <five> </five> seven </mixed-content>'.
 	mixedContent := (XMLHTMLParser parse: xml) findElementNamed: 'mixed-content'.
 	self
-		assert: mixedContent nodes size = 7;
+		assert: mixedContent nodes size equals: 7;
 		assert: (mixedContent nodes first isStringNode: ' one ');
 		assert: (mixedContent nodes second isElementNamed: 'two');
 		deny: mixedContent nodes second hasChildren;
@@ -90,9 +93,9 @@ XMLHTMLParserTest >> testElementMixedContent [
 		assert: (mixedContent nodes fifth isStringNode: ' four ');
 		assert: (mixedContent nodes sixth isElementNamed: 'five');
 		assert: mixedContent nodes sixth hasChildren;
-		assert: mixedContent nodes sixth nodes size = 1;
+		assert: mixedContent nodes sixth nodes size equals: 1;
 		assert: (mixedContent nodes sixth nodes first isStringNode: ' ');
-		assert: (mixedContent nodes seventh isStringNode: ' seven ').
+		assert: (mixedContent nodes seventh isStringNode: ' seven ')
 ]
 
 { #category : #tests }
@@ -108,17 +111,16 @@ XMLHTMLParserTest >> testHTMLEntities [
 
 	p := document findElementNamed: 'p'.
 	self
-		assert: p contentString size = 2;
+		assert: p contentString size equals: 2;
 		assert: (p contentString allSatisfy: [:each | each == character]);
-		assert: (document findElementNamed: 'div') contentString = '&undeclared; &undeclared &;& ;'.
+		assert: (document findElementNamed: 'div') contentString equals: '&undeclared; &undeclared &;& ;'
 ]
 
 { #category : #tests }
 XMLHTMLParserTest >> testHTMLEntitiesUnreplaced [
-	| entity character document |
+	| entity document |
 
 	entity := 'nbsp'.
-	character := XMLHTMLParserTokenizer predefinedHTMLEntities at: entity.
 	document :=
 		(XMLHTMLParser on:
 			'<p>&', entity, ';&', entity, '</p>',
@@ -126,8 +128,8 @@ XMLHTMLParserTest >> testHTMLEntitiesUnreplaced [
 			replacesContentEntityReferences: false;
 			parseDocument.
 	self
-		assert: (document findElementNamed: 'p') contentString = '&nbsp;&nbsp';
-		assert: (document findElementNamed: 'div') contentString = '&undeclared; &undeclared &;& ;'.
+		assert: (document findElementNamed: 'p') contentString equals: '&nbsp;&nbsp';
+		assert: (document findElementNamed: 'div') contentString equals: '&undeclared; &undeclared &;& ;'
 ]
 
 { #category : #tests }
@@ -146,16 +148,16 @@ XMLHTMLParserTest >> testIgnoringInternalSubsets [
 		<!--end-->]>', html.
 	self
 		deny: docWithSubset doctypeDeclaration isNil;
-		assert: docWithSubset doctypeDeclaration root = 'html';
+		assert: docWithSubset doctypeDeclaration root equals: 'html';
 		deny: docWithSubset doctypeDeclaration hasChildren.
 
 	docWithoutSubset := XMLHTMLParser parse: '<!DOCTYPE html>', html.
 	self
 		deny: docWithoutSubset doctypeDeclaration isNil;
-		assert: docWithoutSubset doctypeDeclaration root = 'html';
+		assert: docWithoutSubset doctypeDeclaration root equals: 'html';
 		deny: docWithoutSubset doctypeDeclaration hasChildren.
 
-	self assert: docWithSubset printString = docWithoutSubset printString.
+	self assert: docWithSubset printString equals: docWithoutSubset printString
 ]
 
 { #category : #tests }
@@ -165,16 +167,16 @@ XMLHTMLParserTest >> testInnerXML [
 	document := XMLHTMLParser parse: self addressBookXML.
 	addressBook := document findElementNamed: 'addressbook'.
 	addressBook firstElement innerXML: 'first'.
-	self assert: addressBook firstElement innerXML = 'first'.
+	self assert: addressBook firstElement innerXML equals: 'first'.
 	addressBook elements second innerXML: '<second>second</second>'.
-	self assert: addressBook elements second innerXML = '<second>second</second>'.
+	self assert: addressBook elements second innerXML equals: '<second>second</second>'.
 	addressBook elements third innerXML: '<!--third-->'.
-	self assert: addressBook elements third innerXML = ''.
+	self assert: addressBook elements third innerXML equals: ''.
 	addressBook lastElement innerXML: '<![CDATA[not ignored]]>'.
-	self assert: addressBook lastElement innerXML = 'not ignored'.
+	self assert: addressBook lastElement innerXML equals: 'not ignored'.
 	self
-		assert: addressBook elements size = 4;
-		assert: (addressBook elements allSatisfy: [:each | each isElementNamed: 'person']).
+		assert: addressBook elements size equals: 4;
+		assert: (addressBook elements allSatisfy: [:each | each isElementNamed: 'person'])
 ]
 
 { #category : #tests }
@@ -188,8 +190,8 @@ XMLHTMLParserTest >> testInnerXMLElement [
 	addressBook removeNode: person.
 	person innerXML: '<p>new</p>'.
 	self
-		assert: person innerXML = '<p>new</p>';
-		assert: person printString = (personStartTag, '><p>new</p></person>').
+		assert: person innerXML equals: '<p>new</p>';
+		assert: person printString equals: (personStartTag, '><p>new</p></person>')
 ]
 
 { #category : #tests }
@@ -216,7 +218,7 @@ XMLHTMLParserTest >> testIsInContent [
 	parser parseToken.
 	self deny: handler isInContent.
 	parser parseToken.
-	self assert: handler isInContent.
+	self assert: handler isInContent
 ]
 
 { #category : #tests }
@@ -225,8 +227,8 @@ XMLHTMLParserTest >> testParseHTML [
 
 	html := '<html><body>test</body></html>'.
 	self
-		assert: html parseHTML printString = html;
-		assert: html readStream parseHTML printString = html.
+		assert: html parseHTML printString equals: html;
+		assert: html readStream parseHTML printString equals: html
 ]
 
 { #category : #tests }
@@ -236,7 +238,7 @@ XMLHTMLParserTest >> testParsingCDATA [
 		'<!DOCTYPE><![CDATA[not ignored]]><html><body/>')
 		do: [:each | | document |
 			document := XMLHTMLParser parse: each.
-			self assert: document contentString = 'not ignored'].
+			self assert: document contentString equals: 'not ignored']
 ]
 
 { #category : #tests }
@@ -249,7 +251,7 @@ XMLHTMLParserTest >> testParsingComments [
 			parseDocument.
 	self
 		assert: (document findElementNamed: 'body') firstNode isComment;
-		assert: (document findElementNamed: 'body') firstNode string = 'comment can have -- before end '
+		assert: (document findElementNamed: 'body') firstNode string equals: 'comment can have -- before end '
 ]
 
 { #category : #tests }
@@ -274,12 +276,12 @@ XMLHTMLParserTest >> testParsingDTDs [
 		shouldnt: [document := XMLHTMLParser parse: xml]
 		raise: XMLParserException.
 	self
-		assert: document nodes size = 1;
-		assert: (document findElementNamed: 'p') contentString = '&generalTwo;'.
+		assert: document nodes size equals: 1;
+		assert: (document findElementNamed: 'p') contentString equals: '&generalTwo;'.
 	self assert:
-		document printString =
+		document printString equals:
 			(XMLHTMLParser parse:
-				'<!DOCTYPE root PUBLIC "pubid" "external.dtd"><p>&generalTwo;</p>') printString.
+				'<!DOCTYPE root PUBLIC "pubid" "external.dtd"><p>&generalTwo;</p>') printString
 ]
 
 { #category : #tests }
@@ -289,15 +291,15 @@ XMLHTMLParserTest >> testParsingForms [
 	document := XMLHTMLParser parse: '<form><input><form><input>'.
 
 	self assert:
-		(document allElements asArray collect: [:each | each name]) =
+		(document allElements asArray collect: [:each | each name]) equals:
 			#('html' 'body' 'form' 'input' 'form' 'input').
 
 	document allElementsNamed: 'form' do: [:each |
 		self
-			assert: each elements size = 1;
+			assert: each elements size equals: 1;
 			assert: (each firstElement isNamed: 'input')].
 	document allElementsNamed: 'input' do: [:each |
-		self deny: each hasChildren].
+		self deny: each hasChildren ]
 ]
 
 { #category : #tests }
@@ -306,8 +308,8 @@ XMLHTMLParserTest >> testParsingImplicitStartTag [
 
 	paragraphs := (XMLHTMLParser parse: '</p></p>') allElementsNamed: 'p'.
 	self
-		assert: paragraphs size = 2;
-		deny: (paragraphs anySatisfy: [:each | each hasChildren]).
+		assert: paragraphs size equals: 2;
+		deny: (paragraphs anySatisfy: [:each | each hasChildren])
 ]
 
 { #category : #tests }
@@ -317,8 +319,8 @@ XMLHTMLParserTest >> testParsingInvalidPCData [
 	#('< one & two >' '& three < four >') do: [:each |
 		document := XMLHTMLParser parse: each.
 		self
-			assert: document allNodes size = 4;
-			assert: (document findElementNamed: 'body') contentString = each].
+			assert: document allNodes size equals: 4;
+			assert: (document findElementNamed: 'body') contentString equals: each]
 ]
 
 { #category : #tests }
@@ -330,11 +332,11 @@ XMLHTMLParserTest >> testParsingNonHTMLSections [
 		'1 < 2; 3 > 2; document.write("&lt;</Script>");</Script>
 		<Style>//"</STYLE><HEAD><body><textarea><one>&amp;<two></textarea>'.
 	self
-		assert: (document findElementNamed: 'title') contentString = '<b>"title"</b>';
-		assert: (document findElementNamed: 'script') contentString =
+		assert: (document findElementNamed: 'title') contentString equals: '<b>"title"</b>';
+		assert: (document findElementNamed: 'script') contentString equals:
 			'1 < 2; 3 > 2; document.write("&lt;</Script>");';
-		assert: (document findElementNamed: 'style') contentString = '//"';
-		assert: (document findElementNamed: 'textarea') contentString = '<one>&<two>'.
+		assert: (document findElementNamed: 'style') contentString equals: '//"';
+		assert: (document findElementNamed: 'textarea') contentString equals: '<one>&<two>'
 ]
 
 { #category : #tests }
@@ -351,12 +353,12 @@ XMLHTMLParserTest >> testParsingRedundantStartTags [
 				<body>one<body>two<body/>three</body><!--ignored-->
 			</html>'.
 	self
-		assert: document nodes size = 1;
+		assert: document nodes size equals: 1;
 		assert: (document firstNode isElementNamed: 'html').
 
 	html := document firstNode.
 	self
-		assert: html nodes size = 5;
+		assert: html nodes size equals: 5;
 		assert: html nodes first isStringNode;
 		assert: html nodes first isWhitespace;
 		assert: (html nodes second isElementNamed: 'head');
@@ -368,22 +370,22 @@ XMLHTMLParserTest >> testParsingRedundantStartTags [
 
 	head := html nodes second.
 	self
-		assert: head nodes size = 5;
+		assert: head nodes size equals: 5;
 		assert: head nodes first isStringNode;
 		assert: head nodes first isWhitespace;
 		assert: (head nodes second isElementNamed: 'title');
-		assert: head nodes second contentString = 'test';
+		assert: head nodes second contentString equals: 'test';
 		assert: head nodes third isStringNode;
 		assert: head nodes third isWhitespace;
 		assert: (head nodes fourth isElementNamed: 'script');
-		assert: head nodes fourth contentString = 'test()';
+		assert: head nodes fourth contentString equals: 'test()';
 		assert: head nodes fifth isStringNode;
 		assert: head nodes fifth isWhitespace.
 
 	body := html nodes fourth.
 	self
-		assert: body nodes size = 1;
-		assert: body firstNode contentString = 'onetwothree'.
+		assert: body nodes size equals: 1;
+		assert: body firstNode contentString equals: 'onetwothree'
 ]
 
 { #category : #tests }
@@ -392,28 +394,28 @@ XMLHTMLParserTest >> testParsingTables [
 
 	document := XMLHTMLParser parse: '<table><tr><td>one<td>two<tr><td>three<table><tr><td>four'.
 	self assert:
-		(document allElements asArray collect: [:each | each name]) =
+		(document allElements asArray collect: [:each | each name]) equals:
 			#('html' 'body' 'table' 'tr' 'td' 'td' 'tr' 'td' 'table' 'tr' 'td').
 
 	tables := document allElementsNamed: 'table'.
 	self
-		assert: tables first elements size = 2;
-		assert: tables second elements size = 1.
+		assert: tables first elements size equals: 2;
+		assert: tables second elements size equals: 1.
 	tables do: [:each | self assert: (each elements allSatisfy: [:element | element isNamed: 'tr'])].
 
 	trs := document allElementsNamed: 'tr'.
 	self
-		assert: trs first elements size = 2;
-		assert: trs second elements size = 1;
-		assert: trs third elements size = 1.
+		assert: trs first elements size equals: 2;
+		assert: trs second elements size equals: 1;
+		assert: trs third elements size equals: 1.
 	trs do: [:each | self assert: (each elements allSatisfy: [:element | element isNamed: 'td'])].
 
 	tds := document allElementsNamed: 'td'.
 	self
-		assert: tds first contentString = 'one';
-		assert: tds second contentString = 'two';
-		assert: tds third contentString = 'three four';
-		assert: (tds third nodes second isNamed: 'table').
+		assert: tds first contentString equals: 'one';
+		assert: tds second contentString equals: 'two';
+		assert: tds third contentString equals: 'three four';
+		assert: (tds third nodes second isNamed: 'table')
 ]
 
 { #category : #tests }
@@ -422,15 +424,15 @@ XMLHTMLParserTest >> testParsingTemplates [
 
 	document := XMLHTMLParser parse: '<template><b>test</b></template>'.
 	self
-		assert: document allElements elementNames asArray = #('html' 'head' 'template');
+		assert: document allElements elementNames asArray equals: #('html' 'head' 'template');
 		assert: (document root firstElement isNamed: 'head');
-		assert: (document root firstElement contentStringAt: 'template') = '<b>test</b>'.
+		assert: (document root firstElement contentStringAt: 'template') equals: '<b>test</b>'.
 
 	document := XMLHTMLParser parse: '<body><template><p>test<p></template></body>'.
 	self
-		assert: document allElements elementNames asArray = #('html' 'body' 'template');
+		assert: document allElements elementNames asArray equals: #('html' 'body' 'template');
 		assert: (document root firstElement isNamed: 'body');
-		assert: (document root firstElement contentStringAt: 'template') = '<p>test<p>'.
+		assert: (document root firstElement contentStringAt: 'template') equals: '<p>test<p>'
 ]
 
 { #category : #tests }
@@ -440,21 +442,21 @@ XMLHTMLParserTest >> testParsingText [
 	#('text' '<html>text' '<body>text') do: [:source |
 		document := XMLHTMLParser parse: source.
 		self
-			assert: document nodes size = 1;
+			assert: document nodes size equals: 1;
 			assert: (document root isElementNamed: 'html');
-			assert: document root nodes size = 1;
+			assert: document root nodes size equals: 1;
 			assert: (document root firstNode isElementNamed: 'body');
-			assert: (document root firstNode contentString = 'text')].
+			assert: document root firstNode contentString equals: 'text'].
 
 	#('<head>text' '<html><head>text') do: [:source |
 		document := XMLHTMLParser parse: '<head>text'.
 		self
-			assert: document nodes size = 1;
+			assert: document nodes size equals: 1;
 			assert: (document root isElementNamed: 'html');
-			assert: document root nodes size = 2;
+			assert: document root nodes size equals: 2;
 			assert: (document root firstNode isElementNamed: 'head');
 			assert: (document root nodes second isElementNamed: 'body');
-			assert: (document root nodes second contentString = 'text')].
+			assert: document root nodes second contentString equals: 'text']
 ]
 
 { #category : #tests }
@@ -463,29 +465,26 @@ XMLHTMLParserTest >> testParsingUnclosedHeadSection [
 		document := XMLHTMLParser parse: each.
 		self
 			assert: (document root isElementNamed: 'html');
-			assert: document root nodes size = 2;
+			assert: document root nodes size equals: 2;
 			deny: (document findElementNamed: 'head') hasChildren;
-			assert: (document findElementNamed: 'body') nodes size = 1.
+			assert: (document findElementNamed: 'body') nodes size equals: 1.
 		p := (document findElementNamed: 'body') firstElement.
 		self
 			assert: (p isNamed: 'p');
-			assert: p nodes size = 2;
+			assert: p nodes size equals: 2;
 			assert: (p firstNode isStringNode: 'text');
 			assert: (p nodes second isElementNamed: 'title');
-			assert: p nodes second contentString = 'title']
+			assert: p nodes second contentString equals: 'title']
 ]
 
 { #category : #tests }
 XMLHTMLParserTest >> testParsingUnknownTag [
 	| document |
-
+	document := XMLHTMLParser parse: '<pharo>test</pharo>'.
 	self
-		shouldnt: [document := XMLHTMLParser parse: '<pharo>test</pharo>']
-		raise: Error.
-
-	self
-		assert: document printString = '<html><body><pharo>test</pharo></body></html>';
-		assert: document contentString = 'test'.
+		assert: document printString
+			equals: '<html><body><pharo>test</pharo></body></html>';
+		assert: document contentString equals: 'test'
 ]
 
 { #category : #tests }
@@ -497,13 +496,13 @@ XMLHTMLParserTest >> testParsingVoidElements [
 			'<body>one<img src="a.jpg">two</img><body>three<img src="b.jpg"/>'.
 	body := document findElementNamed: 'body'.
 	self
-		assert: body nodes size = 4;
+		assert: body nodes size equals: 4;
 		assert: (body nodes first isStringNode: 'one');
 		assert: (body nodes second isElementNamed: 'img');
-		assert: (body nodes second attributeAt: 'src') = 'a.jpg';
+		assert: (body nodes second attributeAt: 'src') equals: 'a.jpg';
 		assert: (body nodes third isStringNode: 'twothree');
 		assert: (body nodes fourth isElementNamed: 'img');
-		assert: (body nodes fourth attributeAt: 'src') = 'b.jpg'.
+		assert: (body nodes fourth attributeAt: 'src') equals: 'b.jpg'
 ]
 
 { #category : #tests }
@@ -524,26 +523,26 @@ XMLHTMLParserTest >> testProcessingInstructions [
 
 	document := XMLHTMLParser parse: '<?one two?><body><?three four?></body><?five six?>'.
 	self
-		assert: document nodes size = 2;
+		assert: document nodes size equals: 2;
 		assert: document nodes first isPI;
-		assert: document nodes first target = 'one';
-		assert: document nodes first data = 'two';
+		assert: document nodes first target equals: 'one';
+		assert: document nodes first data equals: 'two';
 		assert: (document nodes second isElementNamed: 'html').
 
 	html := document nodes second.
 	self
-		assert: html nodes size = 2;
+		assert: html nodes size equals: 2;
 		assert: (html nodes first isElementNamed: 'body');
 		assert: html nodes second isPI;
-		assert: html nodes second target = 'five';
-		assert: html nodes second data = 'six'.
+		assert: html nodes second target equals: 'five';
+		assert: html nodes second data equals: 'six'.
 	
 	body := html nodes first.
 	self
-		assert: body nodes size = 1;
+		assert: body nodes size equals: 1;
 		assert: body nodes first isPI;
-		assert: body nodes first target = 'three';
-		assert: body nodes first data = 'four'.
+		assert: body nodes first target equals: 'three';
+		assert: body nodes first data equals: 'four'
 ]
 
 { #category : #tests }
@@ -552,39 +551,39 @@ XMLHTMLParserTest >> testReopeningHTML [
 
 	document := XMLHTMLParser parse: '<html><B>one</body></html><I>two'.
 	self
-		assert: document nodes size = 1;
+		assert: document nodes size equals: 1;
 		assert: (document firstNode isElementNamed: 'html').
 
 	html := document root.
 	self
-		assert: html nodes size = 1;
+		assert: html nodes size equals: 1;
 		assert: (html firstNode isElementNamed: 'body').
 
 	body := html firstNode.
 	self
-		assert: body nodes size = 2;
+		assert: body nodes size equals: 2;
 		assert: (body nodes first isElementNamed: 'b');
-		assert: body nodes first nodes size = 1;
+		assert: body nodes first nodes size equals: 1;
 		assert: (body nodes first firstNode isStringNode: 'one');
 		assert: (body nodes second isElementNamed: 'i');
-		assert: body nodes second contentString = 'two'.
+		assert: body nodes second contentString equals: 'two'.
 
 	document := XMLHTMLParser parse: '<html><B>bold</body></html> '.
 	self
-		assert: document nodes size = 1;
+		assert: document nodes size equals: 1;
 		assert: (document firstNode isElementNamed: 'html').
 
 	html := document root.
 	self
-		assert: html nodes size = 1;
+		assert: html nodes size equals: 1;
 		assert: (html firstNode isElementNamed: 'body').
 
 	body := html firstNode.
 	self
-		assert: body nodes size = 1;
+		assert: body nodes size equals: 1;
 		assert: (body nodes first isElementNamed: 'b');
-		assert: body nodes first nodes size = 1;
-		assert: (body nodes first firstNode isStringNode: 'bold').
+		assert: body nodes first nodes size equals: 1;
+		assert: (body nodes first firstNode isStringNode: 'bold')
 ]
 
 { #category : #tests }
@@ -602,9 +601,9 @@ XMLHTMLParserTest >> testScriptTagEscapeParsing [
 		contentString := each second.
 		body := (XMLHTMLParser parse: source) findElementNamed: 'body'.
 		self
-			assert: body nodes size = 1;
+			assert: body nodes size equals: 1;
 			assert: (body firstNode isNamed: 'script');
-			assert: body firstNode contentString = contentString]
+			assert: body firstNode contentString equals: contentString ]
 ]
 
 { #category : #tests }
@@ -622,9 +621,9 @@ XMLHTMLParserTest >> testStyleTagEscapeParsing [
 		contentString := each second.
 		body := (XMLHTMLParser parse: source) findElementNamed: 'body'.
 		self
-			assert: body nodes size = 1;
+			assert: body nodes size equals: 1;
 			assert: (body firstNode isNamed: 'style');
-			assert: body firstNode contentString = contentString]
+			assert: body firstNode contentString equals: contentString ]
 ]
 
 { #category : #tests }
@@ -633,22 +632,22 @@ XMLHTMLParserTest >> testXMLDeclaration [
 
 	document := XMLHTMLParser parse: '<?xml ?>'.
 	self
-		assert: document version = 1.0;
-		assert: document encoding = '';
+		assert: document version equals: 1.0;
+		assert: document encoding equals: '';
 		deny: document isStandalone.
 
 	document := XMLHTMLParser parse: '<?xml version="1.1" ?>'.
 	self
-		assert: document version = 1.1;
-		assert: document encoding = '';
+		assert: document version equals: 1.1;
+		assert: document encoding equals: '';
 		deny: document isStandalone.
 
 	document :=
 		XMLHTMLParser parse:
 			'<?xml version="onePointZero" encoding="utf-8" standalone="yes"?>'.
 	self
-		assert: document version = 1.0;
-		assert: document encoding = 'utf-8';
+		assert: document version equals: 1.0;
+		assert: document encoding equals: 'utf-8';
 		assert: document isStandalone.
 
 	document :=
@@ -656,11 +655,11 @@ XMLHTMLParserTest >> testXMLDeclaration [
 			'<?xml version="1.1" ?>
 			<?xml version="1.0" encoding="utf-8" standalone="yes"?>'.
 	self
-		assert: document version = 1.1;
-		assert: document encoding = '';
+		assert: document version equals: 1.1;
+		assert: document encoding equals: '';
 		deny: document isStandalone;
-		assert: document nodes size = 1;
+		assert: document nodes size equals: 1;
 		assert: document firstNode isPI;
-		assert: document firstNode target = 'xml';
-		assert: document firstNode data = 'version="1.0" encoding="utf-8" standalone="yes"'.
+		assert: document firstNode target equals: 'xml';
+		assert: document firstNode data equals: 'version="1.0" encoding="utf-8" standalone="yes"'
 ]

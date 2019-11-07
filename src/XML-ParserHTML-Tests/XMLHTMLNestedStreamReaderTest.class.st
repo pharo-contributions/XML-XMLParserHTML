@@ -1,3 +1,6 @@
+"
+Unit tests for XMLHTMLNestedStreamReader
+"
 Class {
 	#name : #XMLHTMLNestedStreamReaderTest,
 	#superclass : #XMLNestedStreamReaderTest,
