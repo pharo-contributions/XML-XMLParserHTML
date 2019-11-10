@@ -156,12 +156,12 @@ ConfigurationOfXMLParserHTML class >> validate [
 	^ ((Smalltalk at: #MetacelloToolBox) validateConfiguration: self debug: #() recurse: false) explore
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline100: spec [
 	<version: '1.0.0-baseline' imports: #('1-master-baseline')>
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline114: spec [
 	<version: '1.1.4-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -174,7 +174,7 @@ ConfigurationOfXMLParserHTML >> baseline114: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline122: spec [
 	<version: '1.2.2-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -187,7 +187,7 @@ ConfigurationOfXMLParserHTML >> baseline122: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline124: spec [
 	<version: '1.2.4-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -200,7 +200,7 @@ ConfigurationOfXMLParserHTML >> baseline124: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline125: spec [
 	<version: '1.2.5-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -213,7 +213,7 @@ ConfigurationOfXMLParserHTML >> baseline125: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline126: spec [
 	<version: '1.2.6-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -226,7 +226,7 @@ ConfigurationOfXMLParserHTML >> baseline126: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline127: spec [
 	<version: '1.2.7-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -239,7 +239,7 @@ ConfigurationOfXMLParserHTML >> baseline127: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline128: spec [
 	<version: '1.2.8-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -252,7 +252,7 @@ ConfigurationOfXMLParserHTML >> baseline128: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline129: spec [
 	<version: '1.2.9-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -265,7 +265,7 @@ ConfigurationOfXMLParserHTML >> baseline129: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline130: spec [
 	<version: '1.3.0-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -278,7 +278,7 @@ ConfigurationOfXMLParserHTML >> baseline130: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline131: spec [
 	<version: '1.3.1-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -291,7 +291,7 @@ ConfigurationOfXMLParserHTML >> baseline131: spec [
 		do: [ spec package: 'XML-Parser-HTML-GemstoneCompatibility' with: 'XML-Parser-HTML-GemstoneCompatibility-monty.1' ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline132: spec [
 	<version: '1.3.2-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -309,7 +309,7 @@ ConfigurationOfXMLParserHTML >> baseline132: spec [
 			spec postLoadDoIt: #initializeClassesForGSBaseline132. ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline134: spec [
 	<version: '1.3.4-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -327,7 +327,7 @@ ConfigurationOfXMLParserHTML >> baseline134: spec [
 			spec postLoadDoIt: #initializeClassesForGSBaseline132. ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline136: spec [
 	<version: '1.3.6-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -345,7 +345,7 @@ ConfigurationOfXMLParserHTML >> baseline136: spec [
 			spec postLoadDoIt: #initializeClassesForGSBaseline132. ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline138: spec [
 	<version: '1.3.8-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -363,7 +363,7 @@ ConfigurationOfXMLParserHTML >> baseline138: spec [
 			spec postLoadDoIt: #initializeClassesForGSBaseline132. ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline139: spec [
 	<version: '1.3.9-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -381,7 +381,7 @@ ConfigurationOfXMLParserHTML >> baseline139: spec [
 			spec postLoadDoIt: #initializeClassesForGSBaseline139. ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline141: spec [
 	<version: '1.4.1-baseline' imports: #('1.4-master-baseline')>
 	spec
@@ -399,7 +399,7 @@ ConfigurationOfXMLParserHTML >> baseline141: spec [
 			spec postLoadDoIt: #initializeClassesForGSBaseline139. ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline150: spec [
 	<version: '1.5.0-baseline' imports: #('1.5-master-baseline')>
 	spec
@@ -417,7 +417,7 @@ ConfigurationOfXMLParserHTML >> baseline150: spec [
 			spec postLoadDoIt: #initializeClassesForGSBaseline139. ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline152: spec [
 	<version: '1.5.2-baseline' imports: #('1.5-master-baseline')>
 	spec
@@ -435,7 +435,7 @@ ConfigurationOfXMLParserHTML >> baseline152: spec [
 			spec postLoadDoIt: #initializeClassesForGSBaseline139. ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baseline153: spec [
 	<version: '1.5.3-baseline' imports: #('1.5-master-baseline')>
 	spec
@@ -453,7 +453,7 @@ ConfigurationOfXMLParserHTML >> baseline153: spec [
 			spec postLoadDoIt: #initializeClassesForGSBaseline139. ]
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baselineMaster14: spec [
 	<version: '1.4-master-baseline' imports: #('1-master-baseline')>
 
@@ -469,7 +469,7 @@ ConfigurationOfXMLParserHTML >> baselineMaster14: spec [
 				with: [ spec requires: 'XML-Parser-HTML-Core' ]. ].
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baselineMaster15: spec [
 	<version: '1.5-master-baseline'>
 
@@ -519,7 +519,7 @@ ConfigurationOfXMLParserHTML >> baselineMaster15: spec [
 				with: [ spec requires: 'XML-ParserHTML-Core' ]. ].
 ]
 
-{ #category : #baselines }
+{ #category : #'outdated - baselines' }
 ConfigurationOfXMLParserHTML >> baselineMaster1: spec [
 	<version: '1-master-baseline'>
 
@@ -569,7 +569,12 @@ ConfigurationOfXMLParserHTML >> customProjectAttributes [
 ConfigurationOfXMLParserHTML >> development: spec [
 	<symbolicVersion: #'development'>
 
-	spec for: #'common' version: '1.5.3-baseline'.
+	spec for: #'common' do: [ 
+		spec
+			baseline: 'XMLParserHTML' with: [ 
+				spec 
+					className: 'BaselineOfXMLParserHTML';
+					repository: 'github://pharo-contributions/XML-XMLParserHTML:master/src' ]]
 ]
 
 { #category : #doits }
@@ -620,10 +625,10 @@ ConfigurationOfXMLParserHTML >> project [
 ConfigurationOfXMLParserHTML >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	spec for: #'common' version: '1.5.5'.
+	spec for: #'common' version: '1.6.0'.
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version100: spec [ 
         <version: '1.0.0' imports: #('1.0.0-baseline')>
 
@@ -634,7 +639,7 @@ ConfigurationOfXMLParserHTML >> version100: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version101: spec [ 
         <version: '1.0.1' imports: #('1.0.0-baseline')>
 
@@ -645,7 +650,7 @@ ConfigurationOfXMLParserHTML >> version101: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version102: spec [ 
         <version: '1.0.2' imports: #('1.0.0-baseline')>
 
@@ -656,7 +661,7 @@ ConfigurationOfXMLParserHTML >> version102: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version103: spec [ 
         <version: '1.0.3' imports: #('1.0.0-baseline')>
 
@@ -667,7 +672,7 @@ ConfigurationOfXMLParserHTML >> version103: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version104: spec [ 
         <version: '1.0.4' imports: #('1.0.0-baseline')>
 
@@ -678,7 +683,7 @@ ConfigurationOfXMLParserHTML >> version104: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version105: spec [ 
         <version: '1.0.5' imports: #('1.0.0-baseline')>
 
@@ -689,7 +694,7 @@ ConfigurationOfXMLParserHTML >> version105: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version106: spec [ 
         <version: '1.0.6' imports: #('1.0.0-baseline')>
 
@@ -700,7 +705,7 @@ ConfigurationOfXMLParserHTML >> version106: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version107: spec [ 
         <version: '1.0.7' imports: #('1.0.0-baseline')>
 
@@ -711,7 +716,7 @@ ConfigurationOfXMLParserHTML >> version107: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version108: spec [ 
         <version: '1.0.8' imports: #('1.0.0-baseline')>
 
@@ -722,7 +727,7 @@ ConfigurationOfXMLParserHTML >> version108: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version109: spec [ 
         <version: '1.0.9' imports: #('1.0.0-baseline')>
 
@@ -733,7 +738,7 @@ ConfigurationOfXMLParserHTML >> version109: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version110: spec [ 
         <version: '1.1.0' imports: #('1.0.0-baseline')>
 
@@ -744,7 +749,7 @@ ConfigurationOfXMLParserHTML >> version110: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version111: spec [ 
         <version: '1.1.1' imports: #('1.0.0-baseline')>
 
@@ -755,7 +760,7 @@ ConfigurationOfXMLParserHTML >> version111: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version112: spec [ 
         <version: '1.1.2' imports: #('1.0.0-baseline')>
 
@@ -766,7 +771,7 @@ ConfigurationOfXMLParserHTML >> version112: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version113: spec [ 
         <version: '1.1.3' imports: #('1.0.0-baseline')>
 
@@ -777,7 +782,7 @@ ConfigurationOfXMLParserHTML >> version113: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version114: spec [ 
         <version: '1.1.4' imports: #('1.1.4-baseline')>
 
@@ -788,7 +793,7 @@ ConfigurationOfXMLParserHTML >> version114: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version115: spec [ 
         <version: '1.1.5' imports: #('1.1.4-baseline')>
 
@@ -799,7 +804,7 @@ ConfigurationOfXMLParserHTML >> version115: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version116: spec [ 
         <version: '1.1.6' imports: #('1.1.4-baseline')>
 
@@ -810,7 +815,7 @@ ConfigurationOfXMLParserHTML >> version116: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version117: spec [ 
         <version: '1.1.7' imports: #('1.1.4-baseline')>
 
@@ -821,7 +826,7 @@ ConfigurationOfXMLParserHTML >> version117: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version118: spec [ 
         <version: '1.1.8' imports: #('1.1.4-baseline')>
 
@@ -832,7 +837,7 @@ ConfigurationOfXMLParserHTML >> version118: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version119: spec [ 
         <version: '1.1.9' imports: #('1.1.4-baseline')>
 
@@ -843,7 +848,7 @@ ConfigurationOfXMLParserHTML >> version119: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version120: spec [ 
         <version: '1.2.0' imports: #('1.1.4-baseline')>
 
@@ -854,7 +859,7 @@ ConfigurationOfXMLParserHTML >> version120: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version121: spec [ 
         <version: '1.2.1' imports: #('1.1.4-baseline')>
 
@@ -865,7 +870,7 @@ ConfigurationOfXMLParserHTML >> version121: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version122: spec [ 
         <version: '1.2.2' imports: #('1.2.2-baseline')>
 
@@ -876,7 +881,7 @@ ConfigurationOfXMLParserHTML >> version122: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version123: spec [ 
         <version: '1.2.3' imports: #('1.2.2-baseline')>
 
@@ -887,7 +892,7 @@ ConfigurationOfXMLParserHTML >> version123: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version124: spec [ 
         <version: '1.2.4' imports: #('1.2.4-baseline')>
 
@@ -898,7 +903,7 @@ ConfigurationOfXMLParserHTML >> version124: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version125: spec [ 
         <version: '1.2.5' imports: #('1.2.5-baseline')>
 
@@ -909,7 +914,7 @@ ConfigurationOfXMLParserHTML >> version125: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version126: spec [ 
         <version: '1.2.6' imports: #('1.2.6-baseline')>
 
@@ -920,7 +925,7 @@ ConfigurationOfXMLParserHTML >> version126: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version127: spec [ 
         <version: '1.2.7' imports: #('1.2.7-baseline')>
 
@@ -931,7 +936,7 @@ ConfigurationOfXMLParserHTML >> version127: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version128: spec [ 
         <version: '1.2.8' imports: #('1.2.8-baseline')>
 
@@ -942,7 +947,7 @@ ConfigurationOfXMLParserHTML >> version128: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version129: spec [ 
         <version: '1.2.9' imports: #('1.2.9-baseline')>
 
@@ -953,7 +958,7 @@ ConfigurationOfXMLParserHTML >> version129: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version130: spec [ 
         <version: '1.3.0' imports: #('1.3.0-baseline')>
 
@@ -964,7 +969,7 @@ ConfigurationOfXMLParserHTML >> version130: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version131: spec [ 
         <version: '1.3.1' imports: #('1.3.1-baseline')>
 
@@ -975,7 +980,7 @@ ConfigurationOfXMLParserHTML >> version131: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version132: spec [ 
         <version: '1.3.2' imports: #('1.3.2-baseline')>
 
@@ -986,7 +991,7 @@ ConfigurationOfXMLParserHTML >> version132: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version133: spec [ 
         <version: '1.3.3' imports: #('1.3.2-baseline')>
 
@@ -997,7 +1002,7 @@ ConfigurationOfXMLParserHTML >> version133: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version134: spec [ 
         <version: '1.3.4' imports: #('1.3.4-baseline')>
 
@@ -1008,7 +1013,7 @@ ConfigurationOfXMLParserHTML >> version134: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version135: spec [ 
         <version: '1.3.5' imports: #('1.3.4-baseline')>
 
@@ -1019,7 +1024,7 @@ ConfigurationOfXMLParserHTML >> version135: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version136: spec [ 
         <version: '1.3.6' imports: #('1.3.6-baseline')>
 
@@ -1030,7 +1035,7 @@ ConfigurationOfXMLParserHTML >> version136: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version137: spec [ 
         <version: '1.3.7' imports: #('1.3.6-baseline')>
 
@@ -1041,7 +1046,7 @@ ConfigurationOfXMLParserHTML >> version137: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version138: spec [ 
         <version: '1.3.8' imports: #('1.3.8-baseline')>
 
@@ -1052,7 +1057,7 @@ ConfigurationOfXMLParserHTML >> version138: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version139: spec [ 
         <version: '1.3.9' imports: #('1.3.9-baseline')>
 
@@ -1063,7 +1068,7 @@ ConfigurationOfXMLParserHTML >> version139: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version140: spec [ 
         <version: '1.4.0' imports: #('1.3.9-baseline')>
 
@@ -1074,7 +1079,7 @@ ConfigurationOfXMLParserHTML >> version140: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version141: spec [ 
         <version: '1.4.1' imports: #('1.4.1-baseline')>
 
@@ -1085,7 +1090,7 @@ ConfigurationOfXMLParserHTML >> version141: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version150: spec [ 
         <version: '1.5.0' imports: #('1.5.0-baseline')>
 
@@ -1096,7 +1101,7 @@ ConfigurationOfXMLParserHTML >> version150: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version151: spec [ 
         <version: '1.5.1' imports: #('1.5.0-baseline')>
 
@@ -1107,7 +1112,7 @@ ConfigurationOfXMLParserHTML >> version151: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version152: spec [ 
         <version: '1.5.2' imports: #('1.5.2-baseline')>
 
@@ -1118,7 +1123,7 @@ ConfigurationOfXMLParserHTML >> version152: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version153: spec [ 
         <version: '1.5.3' imports: #('1.5.3-baseline')>
 
@@ -1129,7 +1134,7 @@ ConfigurationOfXMLParserHTML >> version153: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version154: spec [ 
         <version: '1.5.4' imports: #('1.5.3-baseline')>
 
@@ -1140,7 +1145,7 @@ ConfigurationOfXMLParserHTML >> version154: spec [
                 ].
 ]
 
-{ #category : #versions }
+{ #category : #'outdated - versions' }
 ConfigurationOfXMLParserHTML >> version155: spec [ 
         <version: '1.5.5' imports: #('1.5.3-baseline')>
 
@@ -1149,4 +1154,16 @@ ConfigurationOfXMLParserHTML >> version155: spec [
 			spec package: 'XML-ParserHTML-Core' with: 'XML-ParserHTML-Core-monty.6'.
 			spec package: 'XML-ParserHTML-Tests' with: 'XML-ParserHTML-Tests-monty.1'.
                 ].
+]
+
+{ #category : #versions }
+ConfigurationOfXMLParserHTML >> version160: spec [
+	<version: '1.6.0'>
+
+	spec for: #'common' do: [ 
+		spec
+			baseline: 'XMLParserHTML' with: [ 
+				spec 
+					className: 'BaselineOfXMLParserHTML';
+					repository: 'github://pharo-contributions/XML-XMLParserHTML:1.6.0/src' ]]
 ]
