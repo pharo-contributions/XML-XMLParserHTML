@@ -20,7 +20,7 @@ BaselineOfXMLParserHTML >> baselineOf: spec [
 			"Packages"
 			spec 
 				package: 'XML-ParserHTML-Core' with: [ spec requires: #('XMLParser') ];
-				package: 'XML-ParserHTML-Tests' with: [ spec requires: #('XMLParser Tests' ) ].
+				package: 'XML-ParserHTML-Tests' with: [ spec requires: #('XMLParser Tests' 'XML-ParserHTML-Core') ].
 			
 			"Groups"
 			spec
