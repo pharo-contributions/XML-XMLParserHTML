@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/pharo-contributions/XML-XMLParserHTML.svg?branch=master)](https://travis-ci.org/pharo-contributions/XML-XMLParserHTML) [![Coverage Status](https://coveralls.io/repos/github/pharo-contributions/XML-XMLParserHTML/badge.svg?branch=master)](https://coveralls.io/github/pharo-contributions/XML-XMLParserHTML?branch=master)
 
-XMLParserHTML provides SAX and DOM parsers in [Pharo](http://www.pharo.org) for HTML that convert possibly malformed HTML into well-formed XML.
+**XMLParserHTML** provides SAX and DOM parsers in [Pharo](http://www.pharo.org) for HTML that convert possibly malformed HTML into well-formed XML.
 
 ## Installation
 
