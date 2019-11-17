@@ -566,8 +566,8 @@ ConfigurationOfXMLParserHTML >> customProjectAttributes [
 ]
 
 { #category : #'symbolic versions' }
-ConfigurationOfXMLParserHTML >> development: spec [
-	<symbolicVersion: #'development'>
+ConfigurationOfXMLParserHTML >> dev: spec [
+	<version: #'dev'>
 
 	spec for: #'common' do: [ 
 		spec
@@ -575,6 +575,13 @@ ConfigurationOfXMLParserHTML >> development: spec [
 				spec 
 					className: 'BaselineOfXMLParserHTML';
 					repository: 'github://pharo-contributions/XML-XMLParserHTML:master/src' ]]
+]
+
+{ #category : #'symbolic versions' }
+ConfigurationOfXMLParserHTML >> development: spec [
+	<symbolicVersion: #'development'>
+
+	spec for: #'common' version: 'dev'.
 ]
 
 { #category : #doits }
