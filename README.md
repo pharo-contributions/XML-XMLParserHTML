@@ -12,6 +12,7 @@ Metacello new
 	repository: 'github://pharo-contributions/XML-XMLParserHTML/src';
 	load.
 ```
+
 ## Usage
 
 A simple example on how to use the XML parser for HTML:
@@ -24,6 +25,12 @@ results in the following XML output
 ```HTML
 ...
 ```
+
+## Scrapping
+
+This library together with [XPath](https://github.com/pharo-contributions/XML-XPath) enables you to do web scrapping from the confort of the Pharo toolset.
+
+You can learn more about how to do it reading the [Scrapping with XPath booklet](http://books.pharo.org/booklet-Scraping/html/scrapingbook.html).
 
 
 ## LICENSE
